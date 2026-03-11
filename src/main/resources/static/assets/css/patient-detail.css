@@ -1,0 +1,308 @@
+@import url(https://fonts.googleapis.com/css?family=Raleway:300,400,600,700);
+
+body {
+  font-family: "Raleway", sans-serif;
+  background-color: #f5f8fa; /* Màu nền xám nhạt cho Admin Dashboard */
+  color: #212529;
+  overflow-x: hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  border-right: 1px solid #eaedf1;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.sidebar .brand {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #264b33; /* Xanh đậm đồng bộ trang chủ */
+  border-bottom: 1px solid #eaedf1;
+}
+
+.sidebar-menu {
+  padding: 20px 0;
+  list-style: none;
+  margin: 0;
+}
+
+.sidebar-menu .menu-title {
+  padding: 10px 24px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #a0a5ba;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-menu li a {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  color: #555;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.sidebar-menu li a i {
+  width: 24px;
+  font-size: 1.1rem;
+  margin-right: 10px;
+  color: #a0a5ba;
+}
+
+/* Hiệu ứng khi chọn menu Bác sĩ */
+.sidebar-menu li.active a,
+.sidebar-menu li a:hover {
+  color: #264b33;
+  background-color: #eaf7ed; /* Nền xanh nhạt đồng bộ */
+  border-right: 3px solid #67ae6e;
+}
+
+.sidebar-menu li.active a i,
+.sidebar-menu li a:hover i {
+  color: #67ae6e;
+}
+
+/* ================= MAIN CONTENT ================= */
+.main-wrapper {
+  margin-left: 260px; /* Đẩy nội dung sang phải nhường chỗ cho Sidebar */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header trên cùng */
+.top-header {
+  height: 70px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #eaedf1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.search-bar {
+  background-color: #f5f8fa;
+  border-radius: 20px;
+  padding: 6px 15px;
+  width: 300px;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  margin-left: 8px;
+  width: 100%;
+}
+
+/* Nút bấm (Buttons) */
+.btn-primary-custom {
+  background-color: #264b33;
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-primary-custom:hover {
+  background-color: #1a3c22;
+  color: white;
+}
+
+/* ================= DOCTOR CARD (Giống hệt ảnh SRS) ================= */
+.doctor-card {
+  border: 1px solid #eaedf1;
+  border-radius: 12px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  padding: 20px;
+}
+
+.doctor-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px);
+}
+
+.doctor-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  background-color: #f5f8fa;
+}
+
+.doctor-info h5 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #212529;
+}
+
+.doctor-info .specialty {
+  color: #67ae6e;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.doctor-info .detail-text {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 6px;
+}
+
+/* Nút 3 chấm Dropdown */
+.dropdown-toggle-no-caret::after {
+  display: none !important;
+}
+
+.action-btn {
+  color: #a0a5ba;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+}
+
+/* ================= DASHBOARD STATS CARDS ================= */
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #eaedf1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+/* Các màu sắc cho Icon như trong ảnh */
+.icon-blue {
+  background-color: #e6f0ff;
+  color: #0d6efd;
+}
+.icon-green {
+  background-color: #eaf7ed;
+  color: #198754;
+}
+.icon-purple {
+  background-color: #f3e8ff;
+  color: #6f42c1;
+}
+.icon-orange {
+  background-color: #ffefe6;
+  color: #fd7e14;
+}
+
+.stat-title {
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  color: #212529;
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* =====================patient detail ====================*/
+
+.status-badge {
+  display: inline-flex;
+  white-space: nowrap;
+  text-align: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.back-link:hover {
+  color: #264b33 !important;
+  transform: translateX(-5px);
+  transition: 0.2s;
+}
+.detail-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #eaedf1;
+  padding: 24px;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eaf7ed;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Style cho Bảng lịch sử khám */
+.table-custom th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 2px solid #eaedf1;
+  padding: 12px;
+}
+.table-custom td {
+  padding: 16px 12px;
+  vertical-align: middle;
+  color: #334155;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eaedf1;
+}
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.status-completed {
+  background-color: #eaf7ed;
+  color: #198754;
+}
+.status-cancelled {
+  background-color: #fdf2f2;
+  color: #dc3545;
+}
+.status-pending {
+  background-color: #fffbeb;
+  color: #f59e0b;
+}

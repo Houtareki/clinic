@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heath | Home</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/index.css" />
+  </head>
+  <body>
+    <!-- navbar -->
+    <section>
+      <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+        <div class="container">
+          <a class="navbar-brand text-success fs-3" href="./index.html"
+            >Trustcare Clinic</a
+          >
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-4 fw-medium">
+              <li class="nav-item">
+                <a
+                  class="nav-link active"
+                  aria-current="page"
+                  href="./index.html"
+                  >Home</a
+                >
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="about.html">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Services</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Contact</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./login.html">Login</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </section>
+
+    <!-- intro -->
+    <section class="hero-section">
+      <img
+        src="assets/img/intro1.png"
+        alt="Clinic's Doctor"
+        class="hero-bg-img"
+      />
+
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
+        <div class="row">
+          <div class="col-lg-6 py-5">
+            <h1 class="hero-title display-4 fw-bold mb-3">
+              Sức khỏe là vàng<br />Hãy chăm sóc mỗi ngày
+            </h1>
+
+            <p class="hero-subtitle fs-5 mb-5">
+              Đội ngũ chuyên gia của chúng tôi luôn sẵn sàng đồng hành cùng bạn
+              trên hành trình bảo vệ và nâng cao sức khỏe toàn diện.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- some intro -->
+    <section>
+      <div class="container px-4 py-5" id="featured-3">
+        <h2 class="pb-2 border-bottom hero-title">
+          Tinh thần lạc quan <br />
+          Cuộc sống khỏe mạnh
+        </h2>
+        <div
+          class="row g-4 py-5 row-cols-1 row-cols-lg-3 justify-content-between"
+        >
+          <div class="col">
+            <div class="feature bg-card d-flex flex-column text-center h-100">
+              <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3"
+              >
+                <img src="assets/img/icons/services1.svg" alt="heart img" />
+              </div>
+              <h3 class="fs-2 text-body-emphasis">Khám tổng quát</h3>
+              <p>
+                Cung cấp các gói khám toàn diện, giúp phát hiện sớm và phòng
+                ngừa các nguy cơ tiềm ẩn đối với sức khỏe của bạn và gia đình.
+              </p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="feature bg-card d-flex flex-column text-center h-100">
+              <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3"
+              >
+                <img src="assets/img/icons/services2.svg" alt="heart img" />
+              </div>
+              <h3 class="fs-2 text-body-emphasis">Tư vấn dinh dưỡng</h3>
+              <p>
+                Xây dựng chế độ ăn uống khoa học, cá nhân hóa theo từng thể
+                trạng để duy trì cơ thể khỏe mạnh và tràn đầy năng lượng.
+              </p>
+            </div>
+          </div>
+          <div class="col">
+            <div class="feature bg-card d-flex flex-column text-center h-100">
+              <div
+                class="feature-icon d-inline-flex align-items-center justify-content-center fs-2 mb-3"
+              >
+                <img src="assets/img/icons/services3.svg" alt="heart img" />
+              </div>
+              <h3 class="fs-2 text-body-emphasis">Chăm sóc chuyên sâu</h3>
+              <p>
+                Áp dụng công nghệ y khoa tiên tiến cùng phác đồ điều trị chuẩn
+                quốc tế, mang lại hiệu quả phục hồi tối ưu nhất cho người bệnh.
+              </p>
+              <a href="#" class="icon-link mt-auto mx-auto">
+                Call to action
+                <svg class="bi" aria-hidden="true">
+                  <use xlink:href="#chevron-right"></use>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- card -->
+    <div class="container">
+      <div
+        id="carouselExampleIndicators"
+        class="carousel slide"
+        data-bs-ride="carousel"
+        data-bs-interval="2000"
+      >
+        <div class="carousel-indicators">
+          <button
+            type="button"
+            data-bs-target="#carouselExampleIndicators"
+            data-bs-slide-to="0"
+            class="active"
+            aria-current="true"
+            aria-label="Slide 1"
+          ></button>
+          <button
+            type="button"
+            data-bs-target="#carouselExampleIndicators"
+            data-bs-slide-to="1"
+            aria-label="Slide 2"
+          ></button>
+          <button
+            type="button"
+            data-bs-target="#carouselExampleIndicators"
+            data-bs-slide-to="2"
+            aria-label="Slide 3"
+          ></button>
+        </div>
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="assets/img/image.png" class="d-block w-100" alt="..." />
+          </div>
+          <div class="carousel-item">
+            <img src="assets/img/image2.png" class="d-block w-100" alt="..." />
+          </div>
+          <div class="carousel-item">
+            <img src="assets/img/image3.png" class="d-block w-100" alt="..." />
+          </div>
+        </div>
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleIndicators"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleIndicators"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually">Next</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Testimonial -->
+    <section id="testimonial">
+      <div>
+        <div class="p-5 text-center bg-body-tertiary">
+          <div class="container py-5">
+            <h2 class="text-body-emphasis">Đối tác đồng hành</h2>
+            <p class="col-lg-8 mx-auto lead">
+              Chúng tôi tự hào được hợp tác cùng các tổ chức y tế và nền tảng
+              công nghệ hàng đầu để không ngừng nâng cao chất lượng dịch vụ chăm
+              sóc sức khỏe cho cộng đồng.
+            </p>
+          </div>
+
+          <div class="container text-center">
+            <div class="row">
+              <div class="col-xxl-3 col-sm-12">
+                <img
+                  src="assets/img/icons/aamc.png"
+                  alt="aamc logo"
+                  height="60"
+                />
+              </div>
+              <div class="col-xxl-3 col-sm-12">
+                <img
+                  src="assets/img/icons/health partner.png"
+                  alt="health partner logo"
+                  height="60"
+                />
+              </div>
+              <div class="col-xxl-3 col-sm-12">
+                <img
+                  src="assets/img/icons/global award.png"
+                  alt="global award"
+                  height="60"
+                />
+              </div>
+              <div class="col-xxl-3 col-sm-12">
+                <img
+                  src="assets/img/icons/german.png"
+                  alt="german award"
+                  height="60"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- footer -->
+    <section>
+      <div class="container">
+        <footer
+          class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top"
+        >
+          <div class="col mb-3">
+            <a
+              href="/"
+              class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none"
+              aria-label="Bootstrap"
+            >
+            </a>
+            <div class="col mb-3">
+              <h2 class="footer-primary mb-3">Trustcare Clinic</h2>
+              <p class="text-body-secondary mb-4">
+                Tận tâm chăm sóc, mang lại nụ cười và sức khỏe dài lâu cho mọi
+                gia đình bằng những dịch vụ y tế chuyên nghiệp và hiện đại nhất.
+              </p>
+
+              <ul
+                class="list-unstyled d-flex flex-column gap-3 text-body-secondary"
+              >
+                <li class="d-flex align-items-start">
+                  <i
+                    class="fa-solid fa-location-dot text-primary mt-1 me-3"
+                  ></i>
+                  <span>123 Đường Giải Phóng, Hà Nội</span>
+                </li>
+
+                <li class="d-flex align-items-center">
+                  <i class="fa-solid fa-phone text-primary me-3"></i>
+                  <span>09 1234 5678</span>
+                </li>
+
+                <li class="d-flex align-items-center">
+                  <i class="fa-regular fa-envelope text-primary me-3"></i>
+                  <span>contact@trustcare.vn</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col mb-3"></div>
+          <div class="col mb-3">
+            <h5>Section</h5>
+            <ul class="nav flex-column">
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Home</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary"
+                  >Features</a
+                >
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Pricing</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">FAQs</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">About</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col mb-3">
+            <h5>Section</h5>
+            <ul class="nav flex-column">
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Home</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary"
+                  >Features</a
+                >
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Pricing</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">FAQs</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">About</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col mb-3">
+            <h5>Section</h5>
+            <ul class="nav flex-column">
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Home</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary"
+                  >Features</a
+                >
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">Pricing</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">FAQs</a>
+              </li>
+              <li class="nav-item mb-2">
+                <a href="#" class="nav-link p-0 text-body-secondary">About</a>
+              </li>
+            </ul>
+          </div>
+        </footer>
+      </div>
+    </section>
+  </body>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+    crossorigin="anonymous"
+  ></script>
+</html>
