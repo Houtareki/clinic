@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.querySelector("form");
+    const loginForm = document.getElementById("loginForm");
+
+    if (!loginForm) {
+        console.error("Không tìm thấy form! Hãy kiểm tra lại file HTML.");
+        return;
+    }
 
     loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -30,20 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("fullName", data.fullName);
             localStorage.setItem("accountId", data.accountId);
 
-            switch (data.role) {
-                case "ADMIN":
-                    window.location.href = "/temp/admin/admin.html";
-                    break;
-                case "DOCTOR":
-                    window.location.href = "/temp/doctor/doctor.html";
-                    break;
-                case "RECEPTIONIST":
-                    window.location.href = "/temp/receptionist/receptionist.html";
-                    break;
-
-                default:
-                    window.location.href = "/index.html";
-            }
+            window.location.href = "/pages/dashboard.html";
          })
         .catch((error) => {
             alert(error.message);
