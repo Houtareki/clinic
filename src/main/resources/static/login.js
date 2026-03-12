@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("accountId", data.accountId);
 
             window.location.href = "/pages/dashboard.html";
-         })
+        })
         .catch((error) => {
             alert(error.message);
         })

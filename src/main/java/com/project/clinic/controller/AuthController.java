@@ -42,7 +42,7 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("accountId", account.getId());
         response.put("username", account.getUsername());
-        response.put("fullname", account.getFullName());
+        response.put("fullName", account.getFullName());
         response.put("email", account.getEmail());
         response.put("role", account.getRole());
 
