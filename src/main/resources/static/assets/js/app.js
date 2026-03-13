@@ -32,20 +32,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 4. Khởi tạo Menu Config
     const menuConfig = {
         ADMIN: [
-            { id: "dashboard", name: "Dashboard", icon: "fa-house", targetView: "view-dashboard", action: loadDashboardData },
-            { id: "staff", name: "Quản lý Nhân sự", icon: "fa-users", targetView: "view-staff", action: loadStaffData },
-            { id: "patients", name: "Danh sách bệnh nhân", icon: "fa-user", targetView: "view-patients", action: loadPatientsData }
+            { id: "dashboard", name: "Dashboard", icon: "fa-house", viewUrl: "/views/dashboard-view.html", action: loadDashboardData },
+            { id: "staff", name: "Quản lý Nhân sự", icon: "fa-users", viewUrl: "/views/staff-view.html", action: loadStaffData },
+            { id: "patients", name: "Danh sách bệnh nhân", icon: "fa-user", viewUrl: "/views/patients-view.html", action: loadPatientsData }
         ],
         DOCTOR: [
-            { id: "dashboard", name: "Dashboard", icon: "fa-house", targetView: "view-dashboard", action: loadDashboardData },
-            { id: "patients", name: "Danh sách bệnh nhân", icon: "fa-users", targetView: "view-patients", action: loadPatientsData },
-            { id: "shifts", name: "Lịch trực", icon: "fa-calendar-days", targetView: "view-shifts", action: loadShiftsData }
+            { id: "dashboard", name: "Dashboard", icon: "fa-house", viewUrl: "/views/dashboard-view.html", action: loadDashboardData },
+            { id: "patients", name: "Danh sách bệnh nhân", icon: "fa-users", viewUrl: "/views/patients-view.html", action: loadPatientsData },
+            { id: "shifts", name: "Lịch trực", icon: "fa-calendar-days", viewUrl: "/views/shifts-view.html", action: loadShiftsData }
         ],
         RECEPTIONIST: [
-            { id: "dashboard", name: "Dashboard", icon: "fa-house", targetView: "view-dashboard", action: loadDashboardData },
-            { id: "patients", name: "Quản lý Bệnh nhân", icon: "fa-users", targetView: "view-patients", action: loadPatientsData },
-            { id: "shifts", name: "Quản lý Lịch trực", icon: "fa-calendar-days", targetView: "view-shifts", action: loadShiftsData },
-            { id: "doctors", name: "Danh sách Bác sĩ", icon: "fa-user-doctor", targetView: "view-doctors", action: loadDoctorsData }
+            { id: "dashboard", name: "Dashboard", icon: "fa-house", viewUrl: "/views/dashboard-view.html", action: loadDashboardData },
+            { id: "patients", name: "Quản lý Bệnh nhân", icon: "fa-users", viewUrl: "/views/patients-view.html", action: loadPatientsData },
+            { id: "shifts", name: "Quản lý Lịch trực", icon: "fa-calendar-days", viewUrl: "/views/shifts-view.html", action: loadShiftsData },
+            { id: "doctors", name: "Danh sách Bác sĩ", icon: "fa-user-doctor", viewUrl: "/views/staff-view.html", action: loadStaffData }
         ]
     };
 
@@ -68,37 +68,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("sidebarMenu").innerHTML = menuHtml;
 
     const sidebarBtns = document.querySelectorAll(".sidebar-btn");
-    const allViews = document.querySelectorAll(".page-view");
+    const mainContent = document.getElementById("main-content");
 
     sidebarBtns.forEach(btn => {
-        btn.addEventListener("click", function(e) {
+        btn.addEventListener("click", async function (e) {
             e.preventDefault();
 
+            // Đổi màu menu
             document.querySelectorAll("#sidebarMenu li").forEach(li => li.classList.remove("active"));
-
             this.parentElement.classList.add("active");
 
-            // Ẩn toàn bộ chức năng
-            allViews.forEach(view => view.classList.add("d-none"));
-
-            // Hiện chức năng tương ứng
-            const targetViewId = this.getAttribute("data-view");
-            document.getElementById(targetViewId).classList.remove("d-none");
-
-            // Gọi API đổ dữ liệu
+            // Lấy cấu hình của chức năng vừa click
             const menuId = this.getAttribute("data-id");
             const menuItem = allowedMenus.find(item => item.id === menuId);
-            if (menuItem && typeof menuItem.action === "function") {
-                menuItem.action();
+
+            if (menuItem) {
+                // Hiển thị loading trong lúc đi lấy file HTML
+                mainContent.innerHTML = `<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p>Đang tải giao diện...</p></div>`;
+
+                try {
+                    // Bước A: Đi lấy file HTML con về
+                    const res = await fetch(menuItem.viewUrl);
+                    if (!res.ok) throw new Error("Không tìm thấy file giao diện " + menuItem.viewUrl);
+                    // Bước B: Đắp HTML vừa lấy được vào khung chính
+                    mainContent.innerHTML = await res.text();
+
+                    if (typeof menuItem.action === "function") {
+                        menuItem.action();
+                    }
+                } catch (error) {
+                    mainContent.innerHTML = `<div class="alert alert-danger m-4">${error.message}</div>`;
+                }
             }
         });
     });
     // Mặc định chạy Load Data của nút đầu tiên khi vào web
-    if (allowedMenus.length > 0) {
-        document.getElementById(allowedMenus[0].targetView).classList.remove("d-none");
-        if (typeof allowedMenus[0].action === "function") {
-            allowedMenus[0].action();
-        }
+    if (sidebarBtns.length > 0) {
+        sidebarBtns[0].click();
     }
 });
 
@@ -110,7 +116,6 @@ function loadDashboardData() {
     document.getElementById("satisfaction-stat").innerText = "99%";
 }
 
-function loadStaffData() { console.log("Gọi API lấy nhân sự..."); }
 function loadPatientsData() { console.log("Gọi API lấy bệnh nhân..."); }
 function loadShiftsData() { console.log("Gọi API lấy lịch trực..."); }
 function loadDoctorsData() { console.log("Gọi API lấy bác sĩ..."); }

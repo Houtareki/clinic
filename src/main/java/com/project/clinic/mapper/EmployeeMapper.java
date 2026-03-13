@@ -11,8 +11,8 @@ public class EmployeeMapper {
         return new EmployeeResponse(
                 account.getId(),
                 account.getUsername(),
-                account.getEmail(),
                 account.getFullName(),
+                account.getEmail(),
                 account.getPhone(),
                 account.getRole().name(),
                 account.getAvatarUrl(),
