@@ -1,6 +1,6 @@
 package com.project.clinic.controller;
 
-import com.project.clinic.dto.EmployeeResponse;
+import com.project.clinic.dto.EmployeeResponseDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.mapper.EmployeeMapper;
 import com.project.clinic.service.AccountService;
@@ -24,7 +24,7 @@ public class AdminController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeResponse>> getAllEmployees() {
+    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
         List<Account> accounts = accountService.getAllAccounts();
 
         return ResponseEntity.ok(EmployeeMapper.toEmployeeList(accounts));

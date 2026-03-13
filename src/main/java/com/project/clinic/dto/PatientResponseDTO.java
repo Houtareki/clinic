@@ -9,13 +9,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeResponse {
-    private int id;
-    private String username;
+public class PatientResponseDTO {
+    private int patientId;
     private String fullName;
-    private String email;
+    private int age;
+    private String gender;
     private String phone;
-    private String role;
-    private String avatarUrl;
+    private String address;
+    private String medicalHistory;
     private boolean isActive;
+    private String registeredAt;
 }
