@@ -1,6 +1,7 @@
 package com.project.clinic.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "account")
 public class Account {
@@ -47,17 +49,4 @@ public class Account {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    public Account(String username, String email, String password, String fullName, String phone, String pinCode, Role role, String avatarUrl, boolean isActive, LocalDateTime createdAt) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.fullName = fullName;
-        this.phone = phone;
-        this.pinCode = pinCode;
-        this.role = role;
-        this.avatarUrl = avatarUrl;
-        this.isActive = isActive;
-        this.createdAt = createdAt;
-    }
 }

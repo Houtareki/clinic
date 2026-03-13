@@ -15,4 +15,7 @@ public interface AccountService {
 
     Account save(Account theAccount);
     void delete(Account theAccount);
+
+    List<Account> getAllAccounts();
+    List<Account> getDoctors();
 }

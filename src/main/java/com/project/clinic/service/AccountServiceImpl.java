@@ -86,4 +86,15 @@ public class AccountServiceImpl implements AccountService {
     public void delete(Account theAccount) {
         accountRepository.delete(theAccount);
     }
+
+    @Override
+    public List<Account> getAllAccounts() {
+
+        return accountRepository.findAll();
+    }
+
+    @Override
+    public List<Account> getDoctors() {
+        return accountRepository.findByRole(Account.Role.DOCTOR);
+    }
 }
