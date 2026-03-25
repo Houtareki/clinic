@@ -9,14 +9,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatientResponseDTO {
-    private int patientId;
+public class DoctorRequestDTO {
+    private String username;
+    private String password;
     private String fullName;
-    private int dateOfBirth;
-    private String gender;
     private String phone;
-    private String address;
-    private String medicalHistory;
-    private boolean isActive;
-    private String registeredAt;
+    private String email;
+    private String avatarUrl;
+
+    private String specialty;
+    private String degree;
+    private String bio;
 }

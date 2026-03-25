@@ -18,4 +18,8 @@ public interface AccountService {
 
     List<Account> getAllAccounts();
     List<Account> getDoctors();
+
+    List<Account> findByRole(Account.Role role);
+
+    boolean existsByUsername(String username);
 }

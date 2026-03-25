@@ -97,4 +97,14 @@ public class AccountServiceImpl implements AccountService {
     public List<Account> getDoctors() {
         return accountRepository.findByRole(Account.Role.DOCTOR);
     }
+
+    @Override
+    public List<Account> findByRole(Account.Role role) {
+        return accountRepository.findByRole(role);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return accountRepository.existsByUsername(username);
+    }
 }

@@ -24,6 +24,11 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    public Optional<Patient> findByPatientId(int id) {
+        return patientRepository.findByPatientId(id);
+    }
+
+    @Override
     public Patient findByFullName(String fullName) {
         Optional<Patient> result = patientRepository.findByFullName(fullName);
         Patient thePatient;
@@ -35,6 +40,34 @@ public class PatientServiceImpl implements PatientService {
         }
 
         return thePatient;
+    }
+
+    @Override
+    public Patient findById(int id) {
+        Optional<Patient> result = patientRepository.findById(id);
+        Patient thePatient;
+
+        if (result.isPresent()) {
+            thePatient = result.get();
+        } else {
+            throw new RuntimeException("Patient not found");
+        }
+        return thePatient;
+    }
+
+    @Override
+    public Patient save(Patient patient) {
+        return patientRepository.save(patient);
+    }
+
+    @Override
+    public boolean existsByPhone(String phone) {
+        return patientRepository.existsByPhone(phone);
+    }
+
+    @Override
+    public boolean existsByFullName(String fullName) {
+        return patientRepository.existsByFullName(fullName);
     }
 
     @Override
