@@ -68,7 +68,7 @@ public class ReceptionistController {
     public ResponseEntity<?> getPatientById(@PathVariable int id) {
         try {
             Patient patient = patientService.findById(id);
-            return ResponseEntity.ok(PatientMapper.toPatientRespone(patient));
+            return ResponseEntity.ok(PatientMapper.toPatientResponse(patient));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bệnh nhân");
         }
@@ -91,7 +91,7 @@ public class ReceptionistController {
         newPatient.setRegisteredAt(LocalDateTime.now());
 
         Patient savedPatient = patientService.save(newPatient);
-        return ResponseEntity.status(HttpStatus.CREATED).body(PatientMapper.toPatientRespone(savedPatient));
+        return ResponseEntity.status(HttpStatus.CREATED).body(PatientMapper.toPatientResponse(savedPatient));
     }
 
     @PutMapping("/patients/{id}")
@@ -109,11 +109,22 @@ public class ReceptionistController {
             existingPatient.setActive(patient.isActive());
 
             Patient updatedPatient = patientService.save(existingPatient);
-            return ResponseEntity.ok(PatientMapper.toPatientRespone(updatedPatient));
+            return ResponseEntity.ok(PatientMapper.toPatientResponse(updatedPatient));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bệnh nhân");
         }
     }
 
+    @DeleteMapping("/patients/{id}")
+    public ResponseEntity<?> deletePatient(@PathVariable int id) {
+        try {
+            Patient existingPatient = patientService.findById(id);
+            existingPatient.setActive(false);
+            patientService.save(existingPatient);
 
+            return ResponseEntity.ok("Xóa thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bệnh nhân");
+        }
+    }
 }

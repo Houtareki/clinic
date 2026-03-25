@@ -12,7 +12,8 @@ import lombok.Setter;
 public class PatientResponseDTO {
     private int patientId;
     private String fullName;
-    private int dateOfBirth;
+    private String dateOfBirth;
+    private Integer age;
     private String gender;
     private String phone;
     private String address;

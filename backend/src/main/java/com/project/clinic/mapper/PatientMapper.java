@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class PatientMapper {
-    public static PatientResponseDTO toPatientRespone(Patient patient) {
+    public static PatientResponseDTO toPatientResponse(Patient patient) {
         if (patient == null)
             return null;
 
@@ -28,6 +28,9 @@ public class PatientMapper {
         if (patient.getDateOfBirth() != null){
             int age = Period.between(patient.getDateOfBirth(), LocalDate.now()).getYears();
             dto.setAge(age);
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            dto.setDateOfBirth(patient.getDateOfBirth().format(formatter));
         }
 
         if (patient.getRegisteredAt() != null){
@@ -40,7 +43,7 @@ public class PatientMapper {
 
     public static List<PatientResponseDTO> toPatientList(List<Patient> patients) {
         return patients.stream()
-                .map(PatientMapper::toPatientRespone)
+                .map(PatientMapper::toPatientResponse)
                 .collect(Collectors.toList());
     }
 }
