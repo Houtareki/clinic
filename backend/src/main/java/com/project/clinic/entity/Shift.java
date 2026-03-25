@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,11 +28,14 @@ public class Shift {
     private LocalDate shiftDate;
 
     @Column(name = "period")
-    private String preriod;
+    private String period;
 
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ShiftRoom> shiftRooms = new ArrayList<>();
 }
