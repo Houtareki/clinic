@@ -4,6 +4,7 @@ import com.project.clinic.dto.MedicalRecordResponseDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.entity.MedicalRecord;
 import com.project.clinic.entity.Patient;
+import com.project.clinic.entity.Shift;
 import com.project.clinic.mapper.MedicalRecordMapper;
 import com.project.clinic.service.AccountService;
 import com.project.clinic.service.MedicalRecordService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -24,12 +26,14 @@ public class MedicalRecordController {
     private final MedicalRecordService medicalRecordService;
     private final PatientService patientService;
     private final AccountService accountService;
+    private final ShiftService shiftService;
 
     @Autowired
-    public MedicalRecordController(MedicalRecordService medicalRecordService, PatientService patientService, AccountService accountService) {
+    public MedicalRecordController(MedicalRecordService medicalRecordService, PatientService patientService, AccountService accountService,  ShiftService shiftService) {
         this.medicalRecordService = medicalRecordService;
         this.patientService = patientService;
         this.accountService = accountService;
+        this.shiftService = shiftService;
     }
 
     @GetMapping("/patient/{patientId}")
@@ -42,8 +46,17 @@ public class MedicalRecordController {
     public ResponseEntity<?> creatRecord(@PathVariable int patientId, @RequestBody MedicalRecord record) {
         try {
             Patient patient = patientService.findById(patientId);
-
             Account doctor = accountService.findById(record.getDoctor().getId());
+
+            LocalDate today = LocalDate.now();
+            List<Shift> todayShifts = shiftService.findShiftsByDoctorBetween(doctor.getId(), today, today);
+
+            if (todayShifts.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Bác sĩ này hiện không có ca trực nào trong ngày hôm nay.");
+            }
+
+            record.setShift(todayShifts.getFirst());
 
             record.setPatient(patient);
             record.setDoctor(doctor);

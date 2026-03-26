@@ -9,7 +9,9 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -37,5 +39,5 @@ public class Shift {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShiftRoom> shiftRooms = new ArrayList<>();
+    private Set<ShiftRoom> shiftRooms = new LinkedHashSet<>();
 }

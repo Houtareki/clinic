@@ -37,7 +37,7 @@ public class DoctorMapper {
     public static List<DoctorResponseDTO> toDoctorList(List<Account> accounts, List<Doctor> doctors) {
         return accounts.stream().map(acc -> {
             Doctor doctor = doctors.stream()
-                    .filter(d -> d.getDoctorId() == acc.getId())
+                    .filter(d -> d.getAccount() != null && d.getAccount().getId() == acc.getId())
                     .findFirst()
                     .orElse(null);
 

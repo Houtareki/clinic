@@ -78,7 +78,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bác sĩ");
         }
 
-        Doctor doctor = doctorService.findById(id).orElse(null);
+        Doctor doctor = doctorService.findByAccountId(id).orElse(null);
 
         return ResponseEntity.ok(DoctorMapper.toDoctorResponse(account, doctor));
     }
@@ -105,6 +105,7 @@ public class AdminController {
         Account savedAccount = accountService.save(account);
 
         Doctor doctor = new Doctor();
+        doctor.setAccount(savedAccount);
         doctor.setDoctorId(savedAccount.getId());
         doctor.setSpecialty(request.getSpecialty());
         doctor.setDegree(request.getDegree());
@@ -134,8 +135,9 @@ public class AdminController {
         }
         accountService.save(existingAccount);
 
-        Doctor existingDoctor = doctorService.findById(id).orElse(new Doctor());
-        existingDoctor.setDoctorId(id);
+        Doctor existingDoctor = doctorService.findByAccountId(id).orElse(new Doctor());
+        existingDoctor.setAccount(existingAccount);
+        //existingDoctor.setDoctorId(id);
         if (request.getSpecialty() != null) existingDoctor.setSpecialty(request.getSpecialty());
         if (request.getDegree() != null) existingDoctor.setDegree(request.getDegree());
         if (request.getBio() != null) existingDoctor.setBio(request.getBio());

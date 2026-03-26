@@ -10,5 +10,6 @@ public interface DoctorService {
     Optional<Doctor> findById(int doctorId);
     List<Doctor> getAllDoctors();
 
+    Optional<Doctor> findByAccountId(int accountId);
     void save(Doctor doctor);
 }

@@ -62,10 +62,11 @@ public class ShiftMapper {
     }
 
     public static List<ShiftResponseDTO> toShiftResponseList(List<Shift> shifts, Account.Role userRole, int userId) {
+        if (shifts == null) return new ArrayList<>();
+
         return shifts.stream()
                 .map(shift -> toShiftResponse(shift, userRole, userId))
-                // Bỏ qua các ca trực mà sau khi lọc xong không còn phòng nào
-                .filter(dto -> dto.getRooms() != null && !dto.getRooms().isEmpty())
+                // .filter(dto -> dto.getRooms() != null && !dto.getRooms().isEmpty())
                 .collect(Collectors.toList());
     }
 }

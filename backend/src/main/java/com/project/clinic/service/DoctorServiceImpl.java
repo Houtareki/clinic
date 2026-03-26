@@ -29,6 +29,11 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    public Optional<Doctor> findByAccountId(int accountId) {
+        return doctorRepository.findByAccount_Id(accountId);
+    }
+
+    @Override
     public void save(Doctor doctor) {
         doctorRepository.save(doctor);
     }

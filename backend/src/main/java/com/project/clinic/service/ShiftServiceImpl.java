@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 public class ShiftServiceImpl implements ShiftService {
@@ -66,8 +65,10 @@ public class ShiftServiceImpl implements ShiftService {
         Shift shift = new Shift();
         shift.setShiftDate(request.getShiftDate());
         shift.setPeriod(request.getPeriod());
+        shift.setNote(request.getNote());
+        shift.setCreatedAt(LocalDateTime.now());
 
-        List<ShiftRoom> shiftRooms = new ArrayList<>();
+        Set<ShiftRoom> shiftRooms = new LinkedHashSet<>();
 
         for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
             Room room = roomRepository.findById(assignmentDTO.getRoomId())
@@ -77,7 +78,7 @@ public class ShiftServiceImpl implements ShiftService {
             shiftRoom.setShift(shift);
             shiftRoom.setRoom(room);
 
-            List<ShiftRoomDoctor> shiftRoomDoctors = new ArrayList<>();
+            Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
 
             for (Integer doctorId : assignmentDTO.getDoctorIds()) {
                 Account doctor = accountRepository.findById(doctorId)
@@ -115,10 +116,10 @@ public class ShiftServiceImpl implements ShiftService {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
             ShiftRoom shiftRoom = new ShiftRoom();
-            shiftRoom.setShift(existingShift); // Link lại vào shift hiện tại
+            shiftRoom.setShift(existingShift);
             shiftRoom.setRoom(room);
 
-            List<ShiftRoomDoctor> shiftRoomDoctors = new ArrayList<>();
+            Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
 
             for (Integer doctorId : assignmentDTO.getDoctorIds()) {
                 Account doctor = accountRepository.findById(doctorId)

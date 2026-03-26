@@ -39,7 +39,7 @@ public class ProfileController {
         }
 
         if (account.getRole() == Account.Role.DOCTOR) {
-            Doctor doctor = doctorService.findById(userId).orElse(null);
+            Doctor doctor = doctorService.findByAccountId(userId).orElse(null);
             return ResponseEntity.ok(DoctorMapper.toDoctorResponse(account, doctor));
         } else {
             return ResponseEntity.ok(EmployeeMapper.toEmployeeList(Collections.singletonList(account)).getFirst());
@@ -63,8 +63,10 @@ public class ProfileController {
         accountService.save(account);
 
         if (account.getRole() == Account.Role.DOCTOR) {
-            Doctor doctor = doctorService.findById(userId).orElse(new Doctor());
-            doctor.setDoctorId(userId);
+            Doctor doctor = doctorService.findByAccountId(userId).orElse(new Doctor());
+
+            doctor.setAccount(account);
+            //doctor.setDoctorId(userId);
 
             if (request.getSpecialty() != null) doctor.setSpecialty(request.getSpecialty());
             if (request.getBio() != null) doctor.setBio(request.getBio());

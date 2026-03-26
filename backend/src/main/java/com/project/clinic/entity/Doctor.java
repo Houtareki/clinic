@@ -29,6 +29,6 @@ public class Doctor {
 
 
     @OneToOne
-    @JoinColumn(name = "doctor_id", referencedColumnName = "account_id")
+    @JoinColumn(name = "account_id", referencedColumnName = "account_id")
     private Account account;
 }

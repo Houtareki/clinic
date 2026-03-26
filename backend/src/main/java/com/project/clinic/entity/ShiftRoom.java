@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -31,5 +33,5 @@ public class ShiftRoom {
     private Room room;
 
     @OneToMany(mappedBy = "shiftRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShiftRoomDoctor> shiftRoomDoctors = new ArrayList<>();
+    private Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
 }
