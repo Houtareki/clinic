@@ -114,7 +114,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Page<Account> getEmployeesWithPageAndSearch(String role, String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id"));
 
         if (role != null && !role.trim().isEmpty()) {
             Account.Role theRole = Account.Role.valueOf(role.trim().toUpperCase());

@@ -5,6 +5,7 @@ import com.project.clinic.dto.PatientResponseDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.entity.Doctor;
 import com.project.clinic.entity.Patient;
+import com.project.clinic.mapper.DoctorMapper;
 import com.project.clinic.mapper.DoctorSimpleMapper;
 import com.project.clinic.mapper.PatientMapper;
 import com.project.clinic.service.AccountService;
@@ -35,13 +36,18 @@ public class ReceptionistController {
 
     // ds bác sĩ
     @GetMapping("/doctors")
-    public ResponseEntity<List<DoctorSimpleResponseDTO>> getAllDoctors() {
-        List<Account> accounts = accountService.getDoctors();
-        List<Doctor> doctors = doctorService.getAllDoctors();
+    public ResponseEntity<Page<DoctorSimpleResponseDTO>> getAllDoctors(
+             @RequestParam(defaultValue = "0") int page,
+             @RequestParam(defaultValue = "10") int size,
+             @RequestParam(required = false) String keyword) {
+        try {
+            Page<Doctor> doctorPage = doctorService.getDoctorsWithPageAndSearch(keyword, page, size);
+            Page<DoctorSimpleResponseDTO> responseDTOS = doctorPage.map(doctor -> DoctorSimpleMapper.toSimple(doctor.getAccount(), doctor));
 
-        return ResponseEntity.ok(
-                DoctorSimpleMapper.toDoctorSimple(accounts, doctors)
-        );
+            return ResponseEntity.ok(responseDTOS);
+        }  catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/doctors/{id}")

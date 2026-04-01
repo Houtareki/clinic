@@ -39,7 +39,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public Page<Doctor> getDoctorsWithPageAndSearch(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "doctorId"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "doctorId"));
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             return doctorRepository.findByAccount_FullNameContainingIgnoreCase(keyword, pageable);

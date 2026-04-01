@@ -6,7 +6,6 @@ import com.project.clinic.entity.Account;
 import com.project.clinic.entity.Doctor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DoctorSimpleMapper {
 

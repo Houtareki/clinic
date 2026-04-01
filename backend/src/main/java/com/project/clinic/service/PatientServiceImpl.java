@@ -76,7 +76,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Page<Patient> getPatientWithPageAndSearch(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "patientId"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "patientId"));
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             return patientRepository.findByFullNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(keyword, keyword, pageable);

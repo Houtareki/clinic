@@ -32,6 +32,7 @@ public class AdminController {
         this.doctorService = doctorService;
     }
 
+    // tìm kiếm + phân trang nhân viên
     @GetMapping("/employees")
     public ResponseEntity<Page<EmployeeResponseDTO>> getAllEmployees(
             @RequestParam(required = false) String role,
@@ -47,6 +48,56 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    //thêm nhân viên
+    @PostMapping("/employees")
+    @Transactional
+    public ResponseEntity<?> createEmployee(@RequestBody Account request){
+        if (accountService.existsByUsername(request.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Username đã tồn tại");
+        }
+
+        Account account = new Account();
+        account.setUsername(request.getUsername());
+        account.setPassword(request.getPassword());
+        account.setFullName(request.getFullName());
+        account.setEmail(request.getEmail());
+        account.setPhone(request.getPhone());
+        account.setAvatarUrl(request.getAvatarUrl());
+        account.setRole(request.getRole());
+        account.setActive(true);
+        account.setCreatedAt(LocalDateTime.now());
+
+        Account createdAccount = accountService.save(account);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(EmployeeMapper.toEmployeeResponse(createdAccount));
+    }
+
+    @PutMapping("/employees/{id}")
+    public ResponseEntity<?> updateEmployee(@RequestBody Account request, @PathVariable int id){
+        Account existingAccount = accountService.findById(id);
+        if (existingAccount == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy tài khoản");
+        }
+
+        if (existingAccount.getRole() == Account.Role.DOCTOR) {
+            return ResponseEntity.badRequest()
+                    .body("Không thể chuyển thành bác sĩ bằng API này");
+        }
+
+        if (request.getFullName() != null) existingAccount.setFullName(request.getFullName());
+        if (request.getEmail() != null) existingAccount.setEmail(request.getEmail());
+        if (request.getPhone() != null) existingAccount.setPhone(request.getPhone());
+        if (request.getAvatarUrl() != null) existingAccount.setAvatarUrl(request.getAvatarUrl());
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty())
+            existingAccount.setPassword(request.getPassword());
+        if (request.isActive() != existingAccount.isActive()) {
+            existingAccount.setActive(request.isActive());
+        }
+
+        Account updatedAccount = accountService.save(existingAccount);
+        return ResponseEntity.status(HttpStatus.OK).body(EmployeeMapper.toEmployeeResponse(updatedAccount));
     }
 
     @DeleteMapping("/employees/{id}")
