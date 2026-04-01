@@ -10,6 +10,7 @@ import com.project.clinic.mapper.PatientMapper;
 import com.project.clinic.service.AccountService;
 import com.project.clinic.service.DoctorService;
 import com.project.clinic.service.PatientService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ public class ReceptionistController {
         this.patientService = patientService;
     }
 
+    // ds bác sĩ
     @GetMapping("/doctors")
     public ResponseEntity<List<DoctorSimpleResponseDTO>> getAllDoctors() {
         List<Account> accounts = accountService.getDoctors();
@@ -57,11 +59,18 @@ public class ReceptionistController {
         );
     }
 
+    // ds bệnh nhân + tìm kiếm
     @GetMapping("/patients")
-    public ResponseEntity<List<PatientResponseDTO>> getPatientsList() {
-        List<Patient> patients = patientService.findAll();
+    public ResponseEntity<Page<PatientResponseDTO>> getPatientsList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
 
-        return ResponseEntity.ok(PatientMapper.toPatientList(patients));
+        Page<Patient> patients = patientService.getPatientWithPageAndSearch(keyword, page, size);
+
+        Page<PatientResponseDTO> responseDTOS = patients.map(PatientMapper::toPatientResponse);
+
+        return ResponseEntity.ok(responseDTOS);
     }
 
     @GetMapping("/patients/{id}")
@@ -74,6 +83,7 @@ public class ReceptionistController {
         }
     }
 
+    // thêm bệnh nhân
     @PostMapping("/patients")
     public ResponseEntity<?> addPatient(@RequestBody Patient patient) {
         if (patient.getPhone() != null && patientService.existsByPhone(patient.getPhone())) {
@@ -94,6 +104,7 @@ public class ReceptionistController {
         return ResponseEntity.status(HttpStatus.CREATED).body(PatientMapper.toPatientResponse(savedPatient));
     }
 
+    // cập nhật thông tin bệnh nhân
     @PutMapping("/patients/{id}")
     public ResponseEntity<?> updatePatient(@PathVariable int id, @RequestBody Patient patient) {
         try {

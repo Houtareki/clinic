@@ -10,13 +10,13 @@ import com.project.clinic.mapper.EmployeeMapper;
 import com.project.clinic.service.AccountService;
 import com.project.clinic.service.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -33,21 +33,20 @@ public class AdminController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees(@RequestParam(required = false) String role) {
-        List<Account> accounts;
+    public ResponseEntity<Page<EmployeeResponseDTO>> getAllEmployees(
+            @RequestParam(required = false) String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
 
-        if (role != null && !role.trim().isEmpty()) {
-            try {
-                Account.Role enumRole = Account.Role.valueOf(role.toUpperCase());
-                accounts = accountService.findByRole(enumRole);
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().build();
-            }
-        } else {
-            accounts = accountService.getAllAccounts();
+        try {
+            Page<Account> accountPage = accountService.getEmployeesWithPageAndSearch(role, keyword, page, size);
+            Page<EmployeeResponseDTO> responseDTOS = accountPage.map(EmployeeMapper::toEmployeeResponse);
+
+            return ResponseEntity.ok(responseDTOS);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
-
-        return ResponseEntity.ok(EmployeeMapper.toEmployeeList(accounts));
     }
 
     @DeleteMapping("/employees/{id}")
@@ -64,10 +63,14 @@ public class AdminController {
     }
 
     @GetMapping("/doctors")
-    public ResponseEntity<List<DoctorResponseDTO>> getAllDoctors() {
-        List<Account> accounts = accountService.getDoctors();
-        List<Doctor> doctors = doctorService.getAllDoctors();
-        return ResponseEntity.ok(DoctorMapper.toDoctorList(accounts, doctors));
+    public ResponseEntity<Page<DoctorResponseDTO>> getAllDoctors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword) {
+        Page<Doctor> doctorPage = doctorService.getDoctorsWithPageAndSearch(keyword, page, size);
+
+        Page<DoctorResponseDTO> responseDTOS = doctorPage.map(doctor -> DoctorMapper.toDoctorResponse(doctor.getAccount(), doctor));
+        return ResponseEntity.ok(responseDTOS);
     }
 
     @GetMapping("/doctors/{id}")
@@ -137,7 +140,6 @@ public class AdminController {
 
         Doctor existingDoctor = doctorService.findByAccountId(id).orElse(new Doctor());
         existingDoctor.setAccount(existingAccount);
-        //existingDoctor.setDoctorId(id);
         if (request.getSpecialty() != null) existingDoctor.setSpecialty(request.getSpecialty());
         if (request.getDegree() != null) existingDoctor.setDegree(request.getDegree());
         if (request.getBio() != null) existingDoctor.setBio(request.getBio());

@@ -26,6 +26,7 @@ public class ShiftController {
         this.shiftService = shiftService;
     }
 
+    // lấy ca  trực
     @GetMapping
     public ResponseEntity<List<ShiftResponseDTO>> getShifts(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -48,6 +49,28 @@ public class ShiftController {
         }
 
         return ResponseEntity.ok(ShiftMapper.toShiftResponseList(shifts, role, userId));
+    }
+
+    // lấy chi tiết 1 ca trực
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getShiftById(
+            @PathVariable int id,
+            @RequestHeader("X-User-Role") String roleStr,
+            @RequestHeader("X-User-Id") int userId) {
+
+        Account.Role role;
+        try {
+            role = Account.Role.valueOf(roleStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        try {
+            Shift shift = shiftService.findById(id);
+            return ResponseEntity.ok(ShiftMapper.toShiftResponse(shift, role, userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy ca trực");
+        }
     }
 
     @PostMapping
@@ -94,6 +117,29 @@ public class ShiftController {
         try {
             Shift updatedShift = shiftService.updateShift(id, request);
             return ResponseEntity.ok("Cập nhật ca trực thành công");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteShift(
+            @PathVariable int id,
+            @RequestHeader("X-User-Role") String roleStr) {
+        Account.Role role;
+        try {
+            role = Account.Role.valueOf(roleStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (role != Account.Role.RECEPTIONIST) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ lễ tân mới có quyền xóa!");
+        }
+
+        try {
+            shiftService.deleteShift(id);
+            return ResponseEntity.ok("Xóa ca trực thành công");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

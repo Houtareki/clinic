@@ -3,6 +3,10 @@ package com.project.clinic.service;
 import com.project.clinic.entity.Patient;
 import com.project.clinic.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,6 +75,17 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
+    public Page<Patient> getPatientWithPageAndSearch(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "patientId"));
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return patientRepository.findByFullNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(keyword, keyword, pageable);
+        }
+
+        return patientRepository.findAll(pageable);
+    }
+
+    @Override
     public Patient findByPhone(String phone) {
         Optional<Patient> result = patientRepository.findByPhone(phone);
         Patient thePatient;
@@ -82,4 +97,6 @@ public class PatientServiceImpl implements PatientService {
         }
         return thePatient;
     }
+
+
 }

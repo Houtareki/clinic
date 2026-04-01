@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { getAllEmployees, getDoctors } from "../../api/staffApi";
 
 function StaffCard({ staff, canEdit }) {
@@ -128,7 +128,6 @@ function StaffView() {
 
   return (
     <div>
-      {/* Header row */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h5 className="fw-bold mb-0">
           {isAdmin ? "Quản lý Nhân sự" : "Danh sách Bác sĩ"}

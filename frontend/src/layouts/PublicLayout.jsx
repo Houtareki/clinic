@@ -24,7 +24,7 @@ function Navbar() {
           data-bs-toggle="collapse"
           data-bs-target="#navMenu"
         >
-          <span class="navbar-toggler-icon"></span>
+          <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navMenu">

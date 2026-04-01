@@ -8,7 +8,7 @@ export async function getAllEmployees() {
   return response.json();
 }
 
-export async function geDoctors() {
+export async function getDoctors() {
   const response = await fetch(`${BASE}/admin/doctors`);
 
   if (!response.ok) throw new Error("Không tải được danh sách!");

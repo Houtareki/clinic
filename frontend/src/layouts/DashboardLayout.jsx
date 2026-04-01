@@ -103,7 +103,6 @@ function Header() {
 
   return (
     <header className="bg-white shadow-sm px-4 py-2 d-flex align-items-center">
-      {/* Search bar */}
       <div className="input-group" style={{ maxWidth: "300px" }}>
         <span className="input-group-text bg-white border-end-0">
           <i className="fa-solid fa-magnifying-glass text-muted"></i>
@@ -115,7 +114,6 @@ function Header() {
         />
       </div>
 
-      {/* User dropdown — Bootstrap dropdown */}
       <div className="dropdown ms-auto">
         <div
           className="d-flex align-items-center gap-2 dropdown-toggle"

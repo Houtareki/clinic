@@ -9,7 +9,7 @@ import AboutPage from "./pages/AboutPage";
 import LoginPage from "./features/auth/LoginPage";
 import DashboardView from "./features/dashboard/DashboardView";
 import StaffView from "./features/staff/StaffView";
-
+import "./assets/css/index.css";
 import "./App.css";
 
 function PrivateRoute({ children }) {
@@ -20,7 +20,7 @@ function PrivateRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      <Route>
+      <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -39,7 +39,7 @@ function App() {
           <Route index element={<DashboardView />} />
           <Route path="staff" element={<StaffView />} />
         </Route>
-      </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -49,8 +49,7 @@ public class ShiftMapper {
                     isDoctorInRoom = true;
                 }
             }
-            if (userRole == Account.Role.DOCTOR && isDoctorInRoom) {
-                ShiftResponseDTO.RoomDetailDTO roomDto = new ShiftResponseDTO.RoomDetailDTO();
+            if (userRole == Account.Role.RECEPTIONIST || (userRole == Account.Role.DOCTOR && isDoctorInRoom)) {                ShiftResponseDTO.RoomDetailDTO roomDto = new ShiftResponseDTO.RoomDetailDTO();
                 roomDto.setRoomId(sr.getRoom().getRoomId());
                 roomDto.setRoomName(sr.getRoom().getName());
                 roomDto.setDoctors(doctorDTOs);
@@ -66,7 +65,7 @@ public class ShiftMapper {
 
         return shifts.stream()
                 .map(shift -> toShiftResponse(shift, userRole, userId))
-                // .filter(dto -> dto.getRooms() != null && !dto.getRooms().isEmpty())
+                 .filter(dto -> dto.getRooms() != null && !dto.getRooms().isEmpty())
                 .collect(Collectors.toList());
     }
 }

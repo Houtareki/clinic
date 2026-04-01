@@ -1,6 +1,8 @@
 package com.project.clinic.repository;
 
 import com.project.clinic.entity.Patient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +18,6 @@ public interface PatientRepository extends JpaRepository<Patient, Integer> {
     boolean existsByPhone(String phone);
 
     boolean existsByFullName(String fullName);
+
+    Page<Patient> findByFullNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(String fullName, String phone, Pageable pageable);
 }

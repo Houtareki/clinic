@@ -19,14 +19,9 @@ public interface ShiftRepository extends JpaRepository<Shift, Integer> {
     })
     List<Shift> findByShiftDateBetween(LocalDate startDate, LocalDate endDate);
 
-    @EntityGraph(attributePaths = {
-            "shiftRooms",
-            "shiftRooms.room",
-            "shiftRooms.shiftRoomDoctors",
-            "shiftRooms.shiftRoomDoctors.doctorAccount"
-    })
     @Query("SELECT DISTINCT s FROM Shift s " +
             "JOIN FETCH s.shiftRooms sr " +
+            "JOIN FETCH sr.room " +
             "JOIN FETCH sr.shiftRoomDoctors srd " +
             "JOIN FETCH srd.doctorAccount " +
             "WHERE srd.doctorAccount.id = :doctorId " +
