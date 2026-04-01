@@ -46,7 +46,7 @@ public class ProfileController {
         }
     }
 
-    @PutMapping("/update")
+    @PutMapping("/profile")
     @Transactional
     public ResponseEntity<?> updateProfile(@RequestHeader("X-User-Id") int userId,
                                            @RequestBody ProfileResponseDTO request) {
