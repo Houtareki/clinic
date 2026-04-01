@@ -28,5 +28,5 @@ public interface ShiftRepository extends JpaRepository<Shift, Integer> {
             "AND s.shiftDate BETWEEN :startDate AND :endDate")
     List<Shift> findByDoctorIdAndDateBetween(int doctorId, LocalDate startDate, LocalDate endDate);
 
-
+    long countByShiftDateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
 }

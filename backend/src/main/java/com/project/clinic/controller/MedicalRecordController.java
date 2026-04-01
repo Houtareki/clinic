@@ -13,6 +13,7 @@ import com.project.clinic.service.ShiftService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -71,6 +72,7 @@ public class MedicalRecordController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> updateRecord(@PathVariable int id, @RequestBody MedicalRecord record) {
         try {
             MedicalRecord existingRecord = medicalRecordService.findById(id);
@@ -83,8 +85,16 @@ public class MedicalRecordController {
                 existingRecord.setNote(record.getNote());
             }
 
+            if (record.getSymptoms() != null) {
+                existingRecord.setSymptoms(record.getSymptoms());
+            }
+
             if (record.getStatus() != null) {
                 existingRecord.setStatus(record.getStatus());
+
+                if (record.getStatus().equalsIgnoreCase("Đã khám") && existingRecord.getExaminedAt() == null) {
+                    existingRecord.setExaminedAt(LocalDateTime.now());
+                }
             }
 
             MedicalRecord updatedRecord = medicalRecordService.save(existingRecord);

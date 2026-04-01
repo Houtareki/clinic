@@ -20,4 +20,6 @@ public interface PatientRepository extends JpaRepository<Patient, Integer> {
     boolean existsByFullName(String fullName);
 
     Page<Patient> findByFullNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(String fullName, String phone, Pageable pageable);
+
+    long countByRegisteredAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
 }

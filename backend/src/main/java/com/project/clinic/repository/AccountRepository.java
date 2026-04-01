@@ -23,4 +23,6 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Page<Account> findByRole(Account.Role role, Pageable pageable);
     Page<Account> findByFullNameContainingIgnoreCaseOrPhoneContainingIgnoreCase(String name, String phone, Pageable pageable);
     Page<Account> findByRoleAndFullNameContainingIgnoreCase(Account.Role role, String name, Pageable pageable);
+
+    long countByRoleAndActiveTrue(Account.Role role);
 }

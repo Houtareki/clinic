@@ -10,7 +10,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashboardStatsDTO {
-    private long totalDoctors;
     private long patientsToday;
     private long shiftsToday;
+
+    private long totalDoctors;
+    private long newPatientsToday;
+    private long totalShiftsToday;
+    private long totalAppointmentsToday;
+
+    private long myShiftsToday;
+    private long myAppointmentsToday;
+    private long myPendingAppointments;
+    private long myCompletedAppointments;
 }

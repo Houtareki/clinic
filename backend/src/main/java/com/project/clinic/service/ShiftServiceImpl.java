@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ShiftServiceImpl implements ShiftService {
@@ -109,34 +110,51 @@ public class ShiftServiceImpl implements ShiftService {
         existingShift.setPeriod(request.getPeriod());
         existingShift.setNote(request.getNote());
 
-        existingShift.getShiftRooms().clear();
+        Set<Integer> requestRoomIds = request.getAssignments().stream()
+                .map(ShiftRequestDTO.RoomAssignmentDTO::getRoomId)
+                .collect(Collectors.toSet());
+
+        existingShift.getShiftRooms().removeIf(sr -> !requestRoomIds.contains(sr.getRoom().getRoomId()));
 
         for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
             Room room = roomRepository.findById(assignmentDTO.getRoomId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng!"));
 
-            ShiftRoom shiftRoom = new ShiftRoom();
-            shiftRoom.setShift(existingShift);
-            shiftRoom.setRoom(room);
+            ShiftRoom shiftRoom = existingShift.getShiftRooms().stream()
+                    .filter(sr -> sr.getRoom().getRoomId() == assignmentDTO.getRoomId())
+                    .findFirst().orElse(null);
 
-            Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
 
-            for (Integer doctorId : assignmentDTO.getDoctorIds()) {
-                Account doctor = accountRepository.findById(doctorId)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ!"));
-
-                ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
-                shiftRoomDoctor.setShiftRoom(shiftRoom);
-                shiftRoomDoctor.setDoctorAccount(doctor);
-
-                shiftRoomDoctors.add(shiftRoomDoctor);
+            if (shiftRoom == null) {
+                shiftRoom = new ShiftRoom();
+                shiftRoom.setShift(existingShift);
+                shiftRoom.setRoom(room);
+                existingShift.getShiftRooms().add(shiftRoom);
             }
-            shiftRoom.setShiftRoomDoctors(shiftRoomDoctors);
-            existingShift.getShiftRooms().add(shiftRoom);
-        }
 
+            Set<Integer> requestDoctorIds = new HashSet<>(assignmentDTO.getDoctorIds());
+            shiftRoom.getShiftRoomDoctors().removeIf(srd -> !requestDoctorIds.contains(srd.getDoctorAccount().getId()));
+
+            Set<Integer> existingDoctorIds = shiftRoom.getShiftRoomDoctors().stream()
+                    .map(srd -> srd.getDoctorAccount().getId())
+                    .collect(Collectors.toSet());
+
+            for (Integer doctorId : requestDoctorIds) {
+                if (!existingDoctorIds.contains(doctorId)) {
+                    Account doctor = accountRepository.findById(doctorId)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ!"));
+
+                    ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
+                    shiftRoomDoctor.setShiftRoom(shiftRoom);
+                    shiftRoomDoctor.setDoctorAccount(doctor);
+
+                    shiftRoom.getShiftRoomDoctors().add(shiftRoomDoctor);
+                }
+            }
+        }
         return shiftRepository.save(existingShift);
     }
+
 
     @Override
     @Transactional

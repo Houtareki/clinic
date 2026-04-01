@@ -3,6 +3,7 @@ package com.project.clinic.controller;
 import com.project.clinic.dto.DashboardStatsDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.repository.AccountRepository;
+import com.project.clinic.repository.MedicalRecordRepository;
 import com.project.clinic.repository.PatientRepository;
 import com.project.clinic.repository.ShiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -18,14 +20,17 @@ public class DashboardController {
     private final AccountRepository accountRepository;
     private final PatientRepository patientRepository;
     private final ShiftRepository shiftRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
 
     @Autowired
     public DashboardController(AccountRepository accountRepository,
                                PatientRepository patientRepository,
-                               ShiftRepository shiftRepository) {
+                               ShiftRepository shiftRepository,
+                               MedicalRecordRepository medicalRecordRepository) {
         this.accountRepository = accountRepository;
         this.patientRepository = patientRepository;
         this.shiftRepository = shiftRepository;
+        this.medicalRecordRepository = medicalRecordRepository;
     }
 
     @GetMapping("/stats")
@@ -41,24 +46,23 @@ public class DashboardController {
         }
 
         DashboardStatsDTO stats = new DashboardStatsDTO();
+
         LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(23, 59, 59);
 
-        long totalDoctors = accountRepository.findAll().stream()
-                .filter(acc -> acc.getRole() == Account.Role.DOCTOR && acc.isActive())
-                .count();
-        stats.setTotalDoctors(totalDoctors);
-
-        long totalPatients = patientRepository.count();
-        stats.setPatientsToday(totalPatients);
-
-        long shiftsToday = 0;
         if (role == Account.Role.RECEPTIONIST || role == Account.Role.ADMIN) {
-            shiftsToday = shiftRepository.findByShiftDateBetween(today, today).size();
+            stats.setTotalDoctors(accountRepository.countByRoleAndActiveTrue(Account.Role.DOCTOR));
+            stats.setNewPatientsToday(patientRepository.countByRegisteredAtBetween(startOfDay, endOfDay));
+            stats.setTotalShiftsToday(shiftRepository.countByShiftDateBetween(today, today));
+            stats.setTotalAppointmentsToday(medicalRecordRepository.countByCreatedAtBetween(startOfDay, endOfDay));
         } else if (role == Account.Role.DOCTOR) {
-            shiftsToday = shiftRepository.findByDoctorIdAndDateBetween(userId, today, today).size();
+            long myShifts = shiftRepository.findByDoctorIdAndDateBetween(userId, today, today).size();
+            stats.setMyShiftsToday(myShifts);
+            stats.setMyAppointmentsToday(medicalRecordRepository.countByDoctor_IdAndCreatedAtBetween(userId, startOfDay, endOfDay));
+            stats.setMyPendingAppointments(medicalRecordRepository.countByDoctor_IdAndStatusAndCreatedAtBetween(userId, "Đang chờ", startOfDay, endOfDay));
+            stats.setMyCompletedAppointments(medicalRecordRepository.countByDoctor_IdAndStatusAndCreatedAtBetween(userId, "Đã khám", startOfDay, endOfDay));
         }
-        stats.setShiftsToday(shiftsToday);
-
         return ResponseEntity.ok(stats);
     }
 }
