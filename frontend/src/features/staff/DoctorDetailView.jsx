@@ -1,28 +1,34 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import "../../assets/css/doctor-detail.css";
+
+import { useAuth } from "../../context/useAuth";
+import DoctorWeeklySchedule from "../shift/DoctorWeeklySchedule";
 
 const API_BASE = "http://localhost:8080/api/admin";
+const SPECIALTY_OPTIONS = [
+  "Khoa nội",
+  "Khoa ngoại",
+  "Khoa nhi",
+  "Khoa tim mạch",
+  "Khoa da liễu",
+  "Khoa tai mũi họng",
+  "Khoa thần kinh",
+  "Khoa sản",
+  "Khoa mắt",
+];
 
 const DoctorDetailView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const adminMenuRef = useRef(null);
+  const { user } = useAuth();
 
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState("");
-
-  const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
   const [saving, setSaving] = useState(false);
   const [locking, setLocking] = useState(false);
 
@@ -38,23 +44,12 @@ const DoctorDetailView = () => {
     bio: "",
   });
 
-  const specialtyOptions = [
-    "Khoa nội",
-    "Khoa ngoại",
-    "Khoa nhi",
-    "Khoa tim mạch",
-    "Khoa da liễu",
-    "Khoa tai mũi họng",
-    "Khoa thần kinh",
-    "Khoa sản",
-    "Khoa mắt",
-  ];
-
   const specialtySelectOptions = useMemo(() => {
-    if (!formData.specialty || specialtyOptions.includes(formData.specialty)) {
-      return specialtyOptions;
+    if (!formData.specialty || SPECIALTY_OPTIONS.includes(formData.specialty)) {
+      return SPECIALTY_OPTIONS;
     }
-    return [formData.specialty, ...specialtyOptions];
+
+    return [formData.specialty, ...SPECIALTY_OPTIONS];
   }, [formData.specialty]);
 
   const loadDoctor = useCallback(async () => {
@@ -91,22 +86,6 @@ const DoctorDetailView = () => {
   useEffect(() => {
     loadDoctor();
   }, [loadDoctor]);
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        adminMenuRef.current &&
-        !adminMenuRef.current.contains(event.target)
-      ) {
-        setShowAdminMenu(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -165,33 +144,12 @@ const DoctorDetailView = () => {
 
   const formatDate = (value) => {
     if (!value) return "Chưa cập nhật";
+
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+
     return date.toLocaleDateString("vi-VN");
   };
-
-  const now = useMemo(() => new Date(), []);
-  const weekDays = useMemo(() => {
-    const today = new Date();
-    const monday = new Date(today);
-    const dayIndex = (today.getDay() + 6) % 7;
-    monday.setDate(today.getDate() - dayIndex);
-    monday.setHours(0, 0, 0, 0);
-
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return date;
-    });
-  }, []);
-
-  const weekRangeLabel = useMemo(() => {
-    const formatShort = (date) =>
-      `${String(date.getDate()).padStart(2, "0")}/${String(
-        date.getMonth() + 1,
-      ).padStart(2, "0")}`;
-    return `${formatShort(weekDays[0])} - ${formatShort(weekDays[6])}`;
-  }, [weekDays]);
 
   const getDayName = (date) => {
     const day = date.getDay();
@@ -203,11 +161,6 @@ const DoctorDetailView = () => {
     `${String(date.getDate()).padStart(2, "0")}/${String(
       date.getMonth() + 1,
     ).padStart(2, "0")}`;
-
-  const isToday = (date) =>
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
 
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     doctor?.fullName || "Doctor",
@@ -234,412 +187,203 @@ const DoctorDetailView = () => {
 
   return (
     <>
-      <section>
-        <input type="checkbox" id="sidebar-toggle" hidden />
-        <aside className="sidebar shadow-sm">
-          <div className="brand">
-            <i className="fa-solid fa-hospital-user text-success me-2 fs-4"></i>
-            Trustcare Clinic
-          </div>
-          <ul className="sidebar-menu">
-            <li className="menu-title">Tổng quan</li>
-            <li>
-              <a href="#" onClick={(e) => e.preventDefault()}>
-                <i className="fa-solid fa-house"></i> Dashboard
-              </a>
-            </li>
-            <li className="active">
-              <a href="#" onClick={(e) => e.preventDefault()}>
-                <i className="fa-solid fa-users"></i> Quản lý Nhân sự
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => e.preventDefault()}>
-                <i className="fa-solid fa-user"></i> Danh sách bệnh nhân
-              </a>
-            </li>
-          </ul>
-        </aside>
-      </section>
+      <div className="container-fluid p-4">
+        <a
+          href="#"
+          className="text-decoration-none text-muted mb-4 d-inline-block fw-bold back-link text-start w-100"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate(-1);
+          }}
+        >
+          <i className="fa-solid fa-arrow-left me-2"></i> Quay lại
+        </a>
 
-      <main className="main-wrapper">
-        <header className="top-header shadow-sm">
-          <div className="search-bar">
-            <i className="fa-solid fa-magnifying-glass text-muted"></i>
-            <input type="text" placeholder="Tìm kiếm..." />
-          </div>
-
-          <div className="dropdown" ref={adminMenuRef}>
-            <div
-              className="d-flex align-items-center gap-3 dropdown-toggle dropdown-toggle-no-caret"
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowAdminMenu((prev) => !prev)}
-            >
-              <div className="text-end d-none d-md-block">
-                <div className="fw-bold fs-6">Admin Tuấn</div>
-                <div className="text-muted" style={{ fontSize: "0.75rem" }}>
-                  System Administrator
-                </div>
-              </div>
-              <img
-                src="https://ui-avatars.com/api/?name=Tuan&background=0d6efd&color=fff"
-                className="rounded-circle shadow-sm"
-                width="40"
-                height="40"
-                alt="Admin Avatar"
-              />
-            </div>
-
-            <ul
-              className={`dropdown-menu dropdown-menu-end shadow-sm border-0 mt-3 ${
-                showAdminMenu ? "show" : ""
-              }`}
-              style={{ minWidth: "200px" }}
-            >
-              <li className="px-3 py-2 d-md-none">
-                <span className="fw-bold d-block">Admin Tuấn</span>
-                <span className="text-muted" style={{ fontSize: "0.8rem" }}>
-                  System Administrator
-                </span>
-                <hr className="dropdown-divider mt-2 mb-0" />
-              </li>
-
-              <li>
-                <a
-                  className="dropdown-item py-2 mt-1"
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <i className="fa-regular fa-user me-2 text-primary"></i> Hồ sơ
-                  cá nhân
-                </a>
-              </li>
-              <li>
-                <a
-                  className="dropdown-item py-2"
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <i className="fa-solid fa-gear me-2 text-secondary"></i> Cài
-                  đặt
-                </a>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
-              <li>
-                <a
-                  className="dropdown-item py-2 text-danger fw-bold mb-1"
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <i className="fa-solid fa-arrow-right-from-bracket me-2"></i>
-                  Đăng xuất
-                </a>
-              </li>
-            </ul>
-          </div>
-        </header>
-
-        <div className="container-fluid p-4">
-          <a
-            href="#"
-            className="text-decoration-none text-muted mb-4 d-inline-block fw-bold back-link"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(-1);
-            }}
-          >
-            <i className="fa-solid fa-arrow-left me-2"></i> Quay lại
-          </a>
-
-          <div className="row align-items-start g-4">
-            <div className="col-12">
-              <div className="detail-card p-4 d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <img
-                    src={avatarSrc}
-                    alt="Avatar"
-                    className="profile-avatar me-4"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      borderWidth: "3px",
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = fallbackAvatar;
-                    }}
-                  />
-                  <div>
-                    <div
-                      className="text-primary fw-bold mb-1"
-                      style={{ fontSize: "0.85rem" }}
-                    >
-                      #DT-{String(doctor.id || id).padStart(4, "0")}
-                    </div>
-                    <h3 className="fw-bold text-dark mb-2">
-                      {doctor.fullName || "Chưa cập nhật"}
-                    </h3>
-                    <div
-                      className="badge bg-light text-success border border-success-subtle px-3 py-2 rounded-pill"
-                      style={{ fontSize: "0.85rem" }}
-                    >
-                      <i className="fa-solid fa-stethoscope me-1"></i>
-                      {(doctor.degree || "Bác sĩ") +
-                        " - " +
-                        (doctor.specialty || "Chưa cập nhật")}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  className="btn btn-light rounded-circle border shadow-sm"
-                  style={{ width: "45px", height: "45px" }}
-                  title="Chỉnh sửa hồ sơ"
-                  type="button"
-                  onClick={() => setShowEditModal(true)}
-                >
-                  <i className="fa-solid fa-pen text-muted"></i>
-                </button>
-              </div>
-            </div>
-
-            <div className="col-lg-8">
-              <div className="detail-card mb-4 p-4">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <h5 className="fw-bold text-dark mb-0">Lịch trực tuần này</h5>
-                  <div className="d-flex align-items-center gap-2">
-                    <button
-                      className="btn btn-light border rounded-circle"
-                      style={{ width: "35px", height: "35px", padding: 0 }}
-                      type="button"
-                    >
-                      <i className="fa-solid fa-chevron-left"></i>
-                    </button>
-                    <span
-                      className="fw-bold px-2 text-muted"
-                      style={{ fontSize: "0.9rem" }}
-                    >
-                      {weekRangeLabel}
-                    </span>
-                    <button
-                      className="btn btn-light border rounded-circle"
-                      style={{ width: "35px", height: "35px", padding: 0 }}
-                      type="button"
-                    >
-                      <i className="fa-solid fa-chevron-right"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="weekly-schedule-wrapper mt-3">
-                  <div className="timetable-grid">
-                    <div className="time-col-header"></div>
-
-                    {weekDays.map((date) => {
-                      const sunday = date.getDay() === 0;
-                      const current = isToday(date);
-
-                      return (
-                        <div
-                          key={`header-${date.toISOString()}`}
-                          className={`day-header text-center ${current ? "current-day" : ""}`}
-                        >
-                          <div
-                            className={`day-name ${
-                              sunday
-                                ? "text-danger"
-                                : current
-                                  ? "text-primary"
-                                  : ""
-                            }`}
-                          >
-                            {getDayName(date)}
-                          </div>
-                          <div
-                            className={`day-date ${
-                              sunday
-                                ? "text-danger"
-                                : current
-                                  ? "text-primary"
-                                  : ""
-                            }`}
-                          >
-                            {getDayDate(date)}
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    <div className="shift-row-label bg-light-success text-success border-bottom">
-                      <i className="fa-regular fa-sun mb-1 fs-5"></i>
-                      <span>Ca Sáng</span>
-                    </div>
-
-                    {weekDays.map((date) => (
-                      <div
-                        key={`morning-${date.toISOString()}`}
-                        className="timetable-cell border-bottom"
-                        style={
-                          date.getDay() === 0
-                            ? { backgroundColor: "#fdf2f2" }
-                            : undefined
-                        }
-                      ></div>
-                    ))}
-
-                    <div className="shift-row-label bg-light-warning text-warning-dark">
-                      <i className="fa-solid fa-cloud-sun mb-1 fs-5"></i>
-                      <span>Ca Chiều</span>
-                    </div>
-
-                    {weekDays.map((date) => (
-                      <div
-                        key={`afternoon-${date.toISOString()}`}
-                        className="timetable-cell"
-                        style={
-                          date.getDay() === 0
-                            ? { backgroundColor: "#fdf2f2" }
-                            : undefined
-                        }
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="text-muted mt-3" style={{ fontSize: "0.9rem" }}>
-                  Chưa kết nối API lịch trực.
-                </div>
-              </div>
-
-              <div className="detail-card p-4">
-                <h6
-                  className="fw-bold text-muted mb-3"
-                  style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
-                >
-                  Giới thiệu (Bio)
-                </h6>
-                <p
-                  className="text-muted mb-0"
-                  style={{ fontSize: "0.95rem", lineHeight: 1.6 }}
-                >
-                  {doctor.bio ||
-                    "Hiện chưa có thông tin giới thiệu cho bác sĩ này."}
-                </p>
-              </div>
-            </div>
-
-            <div className="col-lg-4">
-              <div className="detail-card p-4 h-100">
-                <h6
-                  className="fw-bold text-muted mb-4"
-                  style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
-                >
-                  Thông tin liên hệ
-                </h6>
-
-                <div className="d-flex align-items-center mb-4">
+        <div className="row align-items-start g-4">
+          <div className="col-12">
+            <div className="detail-card p-4 d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center">
+                <img
+                  src={avatarSrc}
+                  alt="Avatar"
+                  className="profile-avatar me-4"
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    borderWidth: "3px",
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = fallbackAvatar;
+                  }}
+                />
+                <div className="d-flex flex-column align-items-start">
                   <div
-                    className="me-3 bg-light text-primary rounded-circle d-flex justify-content-center align-items-center"
+                    className="text-primary fw-bold mb-1 text-start"
+                    style={{ fontSize: "0.85rem" }}
+                  >
+                    #DT-{String(doctor.id || id).padStart(4, "0")}
+                  </div>
+                  <h3 className="fw-bold text-dark mb-2 text-start">
+                    {doctor.fullName || "Chưa cập nhật"}
+                  </h3>
+                  <div
+                    className="badge bg-light text-success border border-success-subtle px-3 py-2 rounded-pill  text-start"
+                    style={{ fontSize: "0.85rem" }}
+                  >
+                    <i className="fa-solid fa-stethoscope me-1"></i>
+                    {(doctor.degree || "Bác sĩ") +
+                      " - " +
+                      (doctor.specialty || "Chưa cập nhật")}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                className="btn btn-light rounded-circle border shadow-sm"
+                style={{ width: "45px", height: "45px" }}
+                title="Chỉnh sửa hồ sơ"
+                type="button"
+                onClick={() => setShowEditModal(true)}
+              >
+                <i className="fa-solid fa-pen text-muted"></i>
+              </button>
+            </div>
+          </div>
+
+          <div className="col-lg-8">
+            <DoctorWeeklySchedule
+              doctorId={doctor.id || id}
+              viewerRole={"RECEPTIONIST"}
+              viewerId={Number(user?.accountId) || Number(doctor.id) || 1}
+            />
+
+            <div className="detail-card p-4 doctor-bio-card text-start">
+              <h6
+                className="fw-bold text-muted mb-3 text-start"
+                style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
+              >
+                Giới thiệu (Bio)
+              </h6>
+              <p
+                className="text-muted mb-0 text-start"
+                style={{ fontSize: "0.95rem", lineHeight: 1.6 }}
+              >
+                {doctor.bio ||
+                  "Hiện chưa có thông tin giới thiệu cho bác sĩ này."}
+              </p>
+            </div>
+          </div>
+
+          <div className="col-lg-4">
+            <div className="detail-card p-4 h-100">
+              <h6
+                className="fw-bold text-muted mb-4"
+                style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
+              >
+                Thông tin liên hệ
+              </h6>
+
+              <div className="d-flex align-items-center mb-4">
+                <div
+                  className="me-3 bg-light text-primary rounded-circle d-flex justify-content-center align-items-center"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  <i className="fa-solid fa-phone"></i>
+                </div>
+                <div>
+                  <div
+                    className="text-muted"
                     style={{
-                      width: "45px",
-                      height: "45px",
-                      fontSize: "1.1rem",
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
                     }}
                   >
-                    <i className="fa-solid fa-phone"></i>
+                    Điện thoại
                   </div>
-                  <div>
-                    <div
-                      className="text-muted"
-                      style={{
-                        fontSize: "0.75rem",
-                        textTransform: "uppercase",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Điện thoại
-                    </div>
-                    <span className="fw-bold text-dark">
-                      {doctor.phone || "Chưa cập nhật"}
-                    </span>
-                  </div>
+                  <span className="fw-bold text-dark">
+                    {doctor.phone || "Chưa cập nhật"}
+                  </span>
                 </div>
-
-                <div className="d-flex align-items-center mb-4">
-                  <div
-                    className="me-3 bg-light text-danger rounded-circle d-flex justify-content-center align-items-center"
-                    style={{
-                      width: "45px",
-                      height: "45px",
-                      fontSize: "1.1rem",
-                    }}
-                  >
-                    <i className="fa-regular fa-envelope"></i>
-                  </div>
-                  <div>
-                    <div
-                      className="text-muted"
-                      style={{
-                        fontSize: "0.75rem",
-                        textTransform: "uppercase",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Email
-                    </div>
-                    <span
-                      className="fw-bold text-dark"
-                      style={{ wordBreak: "break-all" }}
-                    >
-                      {doctor.email || "Chưa cập nhật"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="d-flex align-items-center mb-4">
-                  <div
-                    className="me-3 bg-light text-success rounded-circle d-flex justify-content-center align-items-center"
-                    style={{
-                      width: "45px",
-                      height: "45px",
-                      fontSize: "1.1rem",
-                    }}
-                  >
-                    <i className="fa-regular fa-calendar-check"></i>
-                  </div>
-                  <div>
-                    <div
-                      className="text-muted"
-                      style={{
-                        fontSize: "0.75rem",
-                        textTransform: "uppercase",
-                        fontWeight: 600,
-                      }}
-                    >
-                      Ngày gia nhập
-                    </div>
-                    <span className="fw-bold text-dark">
-                      {formatDate(doctor.createdAt)}
-                    </span>
-                  </div>
-                </div>
-
-                <hr className="text-muted opacity-25 my-4" />
-
-                <button
-                  className="btn btn-outline-danger w-100 fw-bold rounded-pill"
-                  type="button"
-                  onClick={() => setShowDeleteModal(true)}
-                >
-                  <i className="fa-solid fa-lock me-2"></i> Khóa tài khoản
-                </button>
               </div>
+
+              <div className="d-flex align-items-center mb-4">
+                <div
+                  className="me-3 bg-light text-danger rounded-circle d-flex justify-content-center align-items-center"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  <i className="fa-regular fa-envelope"></i>
+                </div>
+                <div>
+                  <div
+                    className="text-muted"
+                    style={{
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Email
+                  </div>
+                  <span
+                    className="fw-bold text-dark"
+                    style={{ wordBreak: "break-all" }}
+                  >
+                    {doctor.email || "Chưa cập nhật"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center mb-4">
+                <div
+                  className="me-3 bg-light text-success rounded-circle d-flex justify-content-center align-items-center"
+                  style={{
+                    width: "45px",
+                    height: "45px",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  <i className="fa-regular fa-calendar-check"></i>
+                </div>
+                <div>
+                  <div
+                    className="text-muted"
+                    style={{
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Ngày gia nhập
+                  </div>
+                  <span className="fw-bold text-dark">
+                    {formatDate(doctor.createdAt)}
+                  </span>
+                </div>
+              </div>
+
+              <hr className="text-muted opacity-25 my-4" />
+
+              <button
+                className="btn btn-outline-danger w-100 fw-bold rounded-pill"
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+              >
+                <i className="fa-solid fa-lock me-2"></i> Khóa tài khoản
+              </button>
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {showEditModal && (
         <div
@@ -680,12 +424,12 @@ const DoctorDetailView = () => {
               <div className="modal-body p-4">
                 <form onSubmit={handleSubmitEdit}>
                   <h6 className="fw-bold mb-3 text-muted">
-                    1. Thông tin Tài khoản
+                    1. Thông tin tài khoản
                   </h6>
                   <div className="row g-3 mb-4">
                     <div className="col-md-6">
                       <label className="form-label fw-medium">
-                        Họ và Tên <span className="text-danger">*</span>
+                        Họ và tên <span className="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -708,7 +452,7 @@ const DoctorDetailView = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="VD: xx xxx xxx"
+                        placeholder="VD: 09xx xxx xxx"
                         required
                       />
                     </div>
@@ -809,7 +553,7 @@ const DoctorDetailView = () => {
                         name="avatarUrl"
                         value={formData.avatarUrl}
                         onChange={handleInputChange}
-                        placeholder="link url"
+                        placeholder="Link URL"
                       />
                     </div>
 

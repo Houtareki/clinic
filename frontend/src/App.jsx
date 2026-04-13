@@ -9,6 +9,7 @@ import AboutPage from "./pages/AboutPage";
 import LoginPage from "./features/auth/LoginPage";
 import DashboardView from "./features/dashboard/DashboardView";
 import StaffView from "./features/staff/StaffView";
+import DoctorDetailView from "./features/staff/DoctorDetailView";
 import "./assets/css/index.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -40,6 +41,7 @@ function App() {
         >
           <Route index element={<DashboardView />} />
           <Route path="staff" element={<StaffView />} />
+          <Route path="doctors/:id" element={<DoctorDetailView />} />
         </Route>
       </Routes>
     </BrowserRouter>

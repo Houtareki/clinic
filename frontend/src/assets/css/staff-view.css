@@ -1,0 +1,85 @@
+.staff-view-grid .staff-card {
+  padding: 1.1rem;
+}
+
+.staff-view-grid .staff-card-body {
+  gap: 0.9rem !important;
+}
+
+.staff-view-grid .staff-card-info {
+  min-width: 0;
+}
+
+.staff-view-grid .staff-role-badge {
+  font-size: 0.78rem;
+  line-height: 1.2;
+  padding: 0.4rem 0.65rem;
+  white-space: normal;
+}
+
+.staff-view-grid .staff-card-name {
+  margin-bottom: 0.35rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.staff-view-grid .staff-card-specialty,
+.staff-view-grid .staff-card-contact {
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.staff-view-grid .staff-card-specialty {
+  font-size: 0.84rem;
+}
+
+.staff-view-grid .staff-card-contact {
+  font-size: 0.8rem;
+}
+
+.staff-view-grid .staff-card-contact i {
+  width: 0.95rem;
+}
+
+@media (max-width: 1920px) {
+  .staff-view-grid .staff-card {
+    padding: 1rem;
+  }
+
+  .staff-view-grid .staff-avatar-box,
+  .staff-view-grid .staff-avatar {
+    width: 84px;
+    height: 84px;
+    min-width: 84px;
+  }
+
+  .staff-view-grid .staff-role-badge {
+    font-size: 0.72rem;
+  }
+
+  .staff-view-grid .staff-card-name {
+    font-size: 0.98rem;
+  }
+
+  .staff-view-grid .staff-card-specialty {
+    font-size: 0.8rem;
+  }
+
+  .staff-view-grid .staff-card-contact {
+    font-size: 0.77rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .staff-view-grid .staff-avatar-box,
+  .staff-view-grid .staff-avatar {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+  }
+
+  .staff-view-grid .staff-card-name {
+    font-size: 0.94rem;
+  }
+}

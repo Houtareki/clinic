@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../../assets/css/staff-view.css";
 
 const StaffView = () => {
+  const navigate = useNavigate();
   const [staffList, setStaffList] = useState([]);
   const [filterRole, setFilterRole] = useState("ALL");
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -264,7 +267,7 @@ const StaffView = () => {
       </div>
 
       {/*Danh sách*/}
-      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 staff-view-grid">
         {staffList.map((staff) => {
           const roleUI = getRoleUI(staff.role);
           const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -278,11 +281,22 @@ const StaffView = () => {
 
           return (
             <div className="col" key={staff.id}>
-              <div className="doctor-card position-relative h-100">
+              <div
+                className="doctor-card staff-card position-relative h-100"
+                onClick={() => {
+                  if (staff.role === "DOCTOR") {
+                    navigate(`/dashboard/doctors/${staff.id}`);
+                  }
+                }}
+                style={{
+                  cursor: staff.role === "DOCTOR" ? "pointer" : "default",
+                }}
+              >
                 <div
                   className="dropdown position-absolute top-0 end-0 mt-3 me-3"
                   data-staff-dropdown-root
                   style={{ zIndex: 2 }}
+                  onClick={(event) => event.stopPropagation()}
                 >
                   <button
                     className="action-btn border-0 bg-transparent p-1 dropdown-toggle dropdown-toggle-no-caret"
@@ -335,7 +349,7 @@ const StaffView = () => {
 
                 {/* thông tin card */}
 
-                <div className="d-flex gap-3 text-decoration-none text-dark align-items-start">
+                <div className="d-flex gap-3 text-decoration-none text-dark align-items-start staff-card-body">
                   <div className="staff-avatar-box shadow-sm">
                     <img
                       src={avatarSrc}
@@ -347,30 +361,27 @@ const StaffView = () => {
                       }}
                     />
                   </div>
-                  <div className="doctor-info flex-grow-1">
+                  <div className="doctor-info staff-card-info flex-grow-1">
                     <span
-                      className={`badge bg-${roleUI.bg} bg-opacity-10 text-${roleUI.bg} mb-2 border border-${roleUI.bg} border-opacity-25`}
+                      className={`badge staff-role-badge bg-${roleUI.bg} bg-opacity-10 text-${roleUI.bg} mb-2 border border-${roleUI.bg} border-opacity-25`}
                     >
                       {roleUI.name}
                     </span>
 
-                    <h5>{staff.fullName}</h5>
+                    <h5 className="staff-card-name">{staff.fullName}</h5>
 
                     {/*chuyên khoa bác sĩ */}
                     {staff.role === "DOCTOR" && (
-                      <div
-                        className="text-muted mb-1"
-                        style={{ fontSize: "0.9rem" }}
-                      >
+                      <div className="text-muted mb-1 staff-card-specialty">
                         {staff.specialty || "Khoa chung"}
                       </div>
                     )}
 
-                    <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                    <div className="text-muted staff-card-contact">
                       <i className="fa-solid fa-envelope me-2"></i>
                       {staff.email}
                     </div>
-                    <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+                    <div className="text-muted staff-card-contact">
                       <i className="fa-solid fa-phone me-2"></i>
                       {staff.phone}
                     </div>
