@@ -29,43 +29,57 @@ const StaffView = () => {
   // lấy ds nhân viên
   const fetchStaff = async () => {
     try {
-      let url = `${API_BASE}/employees`;
-      let params = { page: 0, size: 20 };
-
       if (filterRole === "DOCTOR") {
-        url = `${API_BASE}/doctors`;
-        delete params.role;
-      } else if (filterRole !== "ALL") {
-        params.role = filterRole;
+        const doctorRes = await axios.get(`${API_BASE}/doctors`, {
+          params: { page: 0, size: 20 },
+        });
+        setStaffList(doctorRes.data.content || []);
+        return;
       }
 
-      const response = await axios.get(url, { params });
-      setStaffList(response.data.content || []);
+      if (filterRole !== "ALL") {
+        const employeeRes = await axios.get(`${API_BASE}/employees`, {
+          params: { role: filterRole, page: 0, size: 20 },
+        });
+        setStaffList(employeeRes.data.content || []);
+        return;
+      }
+
+      const [employeeRes, doctorRes] = await Promise.all([
+        axios.get(`${API_BASE}/employees`, {
+          params: { page: 0, size: 20 },
+        }),
+        axios.get(`${API_BASE}/doctors`, {
+          params: { page: 0, size: 20 },
+        }),
+      ]);
+
+      const employees = employeeRes.data.content || [];
+      const doctors = doctorRes.data.content || [];
+
+      const doctorMap = new Map(doctors.map((doctor) => [doctor.id, doctor]));
+
+      const mergedStaff = employees.map((staff) => {
+        if (staff.role === "DOCTOR" && doctorMap.has(staff.id)) {
+          const doctorInfo = doctorMap.get(staff.id);
+          return {
+            ...staff,
+            specialty: doctorInfo.specialty,
+            degree: doctorInfo.degree,
+            bio: doctorInfo.bio,
+          };
+        }
+        return staff;
+      });
+
+      setStaffList(mergedStaff);
     } catch (error) {
       console.error("Lỗi khi tải danh sách nhân sự:", error);
     }
   };
 
   useEffect(() => {
-    const loadStaff = async () => {
-      try {
-        let url = `${API_BASE}/employees`;
-        let params = { page: 0, size: 20 };
-
-        if (filterRole === "DOCTOR") {
-          url = `${API_BASE}/doctors`;
-        } else if (filterRole !== "ALL") {
-          params.role = filterRole;
-        }
-
-        const response = await axios.get(url, { params });
-        setStaffList(response.data.content || []);
-      } catch (error) {
-        console.error("Lỗi khi tải danh sách nhân sự:", error);
-      }
-    };
-
-    loadStaff();
+    fetchStaff();
   }, [filterRole]);
 
   useEffect(() => {
@@ -320,6 +334,7 @@ const StaffView = () => {
                 </div>
 
                 {/* thông tin card */}
+
                 <div className="d-flex gap-3 text-decoration-none text-dark align-items-start">
                   <div className="staff-avatar-box shadow-sm">
                     <img

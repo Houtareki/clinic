@@ -52,7 +52,7 @@ function Sidebar({ menus }) {
       <div className="p-3 border-bottom">
         <span className="text-success fw-bold fs-5">
           <i className="fa-solid fa-hospital-user me-2"></i>
-          Trustcare
+          Trustcare Clinic
         </span>
       </div>
 
