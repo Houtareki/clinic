@@ -51,9 +51,6 @@ function AboutPage() {
                   </li>
                 ))}
               </ul>
-              <a href="#" className="btn btn-success rounded-pill px-4 mt-4">
-                Liên hệ ngay
-              </a>
             </div>
           </div>
         </div>

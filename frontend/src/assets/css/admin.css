@@ -248,3 +248,24 @@ body {
   position: relative;
   overflow: hidden;
 }
+
+.staff-avatar-box {
+  width: 96px;
+  height: 96px;
+  min-width: 96px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.staff-avatar {
+  width: "96px";
+  height: "96px";
+  min-width: "96px";
+  object-fit: "cover";
+  object-position: "center";
+  display: "block";
+  border-radius: "12px";
+  flex-shrink: 0;
+}

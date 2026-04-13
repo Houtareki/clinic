@@ -11,6 +11,8 @@ import DashboardView from "./features/dashboard/DashboardView";
 import StaffView from "./features/staff/StaffView";
 import "./assets/css/index.css";
 import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
