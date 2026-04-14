@@ -1,26 +1,31 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 const MENU_CONFIG = {
   ADMIN: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
-    { path: "/dashboard/staff", label: "Quản lý Nhân sự", icon: "fa-users" },
+    { path: "/dashboard/staff", label: "Quản lý nhân sự", icon: "fa-users" },
   ],
   DOCTOR: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
-    { path: "/dashboard/shift", label: "Lịch trực", icon: "fa-calendar-days" },
+    { path: "/dashboard/shift", label: "Lịch trực", icon: "fa-calendar-days" },
   ],
   RECEPTIONIST: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
     {
       path: "/dashboard/staff",
-      label: "Dánh sách bác sĩ",
+      label: "Danh sách bác sĩ",
       icon: "fa-user-doctor",
     },
     {
+      path: "/dashboard/patients",
+      label: "Danh sách bệnh nhân",
+      icon: "fa-hospital-user",
+    },
+    {
       path: "/dashboard/shift",
-      label: "Quản lý lịch trực",
-      icon: "fa-calender-days",
+      label: "Quản lý lịch trực",
+      icon: "fa-calendar-days",
     },
   ],
 };
@@ -103,17 +108,6 @@ function Header() {
 
   return (
     <header className="bg-white shadow-sm px-4 py-2 d-flex align-items-center">
-      <div className="input-group" style={{ maxWidth: "300px" }}>
-        <span className="input-group-text bg-white border-end-0">
-          <i className="fa-solid fa-magnifying-glass text-muted"></i>
-        </span>
-        <input
-          type="text"
-          className="form-control border-start-0"
-          placeholder="Tìm kiếm..."
-        />
-      </div>
-
       <div className="dropdown ms-auto">
         <div
           className="d-flex align-items-center gap-2 dropdown-toggle"

@@ -6,23 +6,102 @@ import "../../assets/css/doctor-detail.css";
 import { useAuth } from "../../context/useAuth";
 import DoctorWeeklySchedule from "../shift/DoctorWeeklySchedule";
 
-const API_BASE = "http://localhost:8080/api/admin";
+const ADMIN_API_BASE = "http://localhost:8080/api/admin";
+const RECEPTIONIST_API_BASE = "http://localhost:8080/api/receptionist";
+
 const SPECIALTY_OPTIONS = [
-  "Khoa nội",
-  "Khoa ngoại",
+  "Khoa noi",
+  "Khoa ngoai",
   "Khoa nhi",
-  "Khoa tim mạch",
-  "Khoa da liễu",
-  "Khoa tai mũi họng",
-  "Khoa thần kinh",
-  "Khoa sản",
-  "Khoa mắt",
+  "Khoa tim mach",
+  "Khoa da lieu",
+  "Khoa tai mui hong",
+  "Khoa than kinh",
+  "Khoa san",
+  "Khoa mat",
 ];
+
+const DATE_FIELD_CANDIDATES = [
+  "createdAt",
+  "createdDate",
+  "joinedAt",
+  "joinDate",
+  "registeredAt",
+];
+
+const isPresent = (value) => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim() !== "";
+  return true;
+};
+
+const pickFirstValue = (sources, keys, fallback = "") => {
+  for (const source of sources) {
+    if (!source) continue;
+
+    for (const key of keys) {
+      const value = source[key];
+
+      if (isPresent(value)) {
+        return value;
+      }
+    }
+  }
+
+  return fallback;
+};
+
+const extractListItems = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.content)) {
+    return payload.content;
+  }
+
+  return [];
+};
+
+const getRecordId = (record) =>
+  Number(
+    record?.id ?? record?.doctorId ?? record?.accountId ?? record?.employeeId,
+  );
+
+const buildDoctorRecord = (doctorId, sources) => {
+  const availableSources = sources.filter(Boolean);
+
+  if (availableSources.length === 0) {
+    return null;
+  }
+
+  const firstSource = availableSources[0];
+
+  return {
+    ...firstSource,
+    id: pickFirstValue(
+      availableSources,
+      ["id", "doctorId", "accountId"],
+      doctorId,
+    ),
+    role: "DOCTOR",
+    fullName: pickFirstValue(availableSources, ["fullName", "name"]),
+    phone: pickFirstValue(availableSources, ["phone", "phoneNumber"]),
+    email: pickFirstValue(availableSources, ["email"]),
+    username: pickFirstValue(availableSources, ["username"]),
+    avatarUrl: pickFirstValue(availableSources, ["avatarUrl", "avatar"]),
+    specialty: pickFirstValue(availableSources, ["specialty"]),
+    degree: pickFirstValue(availableSources, ["degree"]),
+    bio: pickFirstValue(availableSources, ["bio", "description"]),
+    createdAt: pickFirstValue(availableSources, DATE_FIELD_CANDIDATES, null),
+  };
+};
 
 const DoctorDetailView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const canManageDoctor = user?.role === "ADMIN";
 
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,48 +134,118 @@ const DoctorDetailView = () => {
   const loadDoctor = useCallback(async () => {
     setLoading(true);
     setErrorText("");
+    const doctorId = Number(id);
+    const isAdminViewer = user?.role === "ADMIN";
 
-    try {
-      const response = await axios.get(`${API_BASE}/doctors/${id}`);
-      const data = response.data;
+    const requestConfigs = isAdminViewer
+      ? [
+          { type: "detail", url: `${ADMIN_API_BASE}/doctors/${id}` },
+          {
+            type: "doctor-list",
+            url: `${ADMIN_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
+          {
+            type: "employee-list",
+            url: `${ADMIN_API_BASE}/employees`,
+            params: { page: 0, size: 100 },
+          },
+        ]
+      : [
+          { type: "detail", url: `${RECEPTIONIST_API_BASE}/doctors/${id}` },
+          {
+            type: "doctor-list",
+            url: `${RECEPTIONIST_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
+          { type: "fallback-detail", url: `${ADMIN_API_BASE}/doctors/${id}` },
+          {
+            type: "fallback-doctor-list",
+            url: `${ADMIN_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
+        ];
 
-      setDoctor(data);
-      setFormData({
-        fullName: data?.fullName || "",
-        phone: data?.phone || "",
-        email: data?.email || "",
-        username: data?.username || "",
-        password: "",
-        avatarUrl: data?.avatarUrl || "",
-        specialty: data?.specialty || "",
-        degree: data?.degree || "",
-        bio: data?.bio || "",
-      });
-    } catch (error) {
-      console.error("Lỗi khi tải chi tiết bác sĩ:", error);
+    const results = await Promise.allSettled(
+      requestConfigs.map((config) =>
+        axios.get(config.url, { params: config.params }),
+      ),
+    );
+
+    const matchedSources = [];
+    let lastError = null;
+
+    results.forEach((result, index) => {
+      const config = requestConfigs[index];
+
+      if (result.status !== "fulfilled") {
+        lastError = result.reason;
+        return;
+      }
+
+      const payload = result.value.data;
+
+      if (config.type.includes("list")) {
+        const matchedRecord = extractListItems(payload).find(
+          (record) => getRecordId(record) === doctorId,
+        );
+
+        if (matchedRecord) {
+          matchedSources.push(matchedRecord);
+        }
+
+        return;
+      }
+
+      if (payload) {
+        matchedSources.push(payload);
+      }
+    });
+
+    const mergedDoctor = buildDoctorRecord(doctorId, matchedSources);
+
+    if (!mergedDoctor) {
+      console.error("Loi khi tai chi tiet bac si:", lastError);
       setErrorText(
-        error.response?.data || "Không thể tải thông tin bác sĩ từ hệ thống.",
+        lastError?.response?.data ||
+          "Khong the tai thong tin bac si tu he thong.",
       );
       setDoctor(null);
-    } finally {
       setLoading(false);
+      return;
     }
-  }, [id]);
+
+    setDoctor(mergedDoctor);
+    setFormData({
+      fullName: mergedDoctor.fullName || "",
+      phone: mergedDoctor.phone || "",
+      email: mergedDoctor.email || "",
+      username: mergedDoctor.username || "",
+      password: "",
+      avatarUrl: mergedDoctor.avatarUrl || "",
+      specialty: mergedDoctor.specialty || "",
+      degree: mergedDoctor.degree || "",
+      bio: mergedDoctor.bio || "",
+    });
+    setLoading(false);
+  }, [id, user?.role]);
 
   useEffect(() => {
     loadDoctor();
   }, [loadDoctor]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmitEdit = async (e) => {
-    e.preventDefault();
+  const handleSubmitEdit = async (event) => {
+    event.preventDefault();
+    if (!canManageDoctor) return;
+
     setSaving(true);
 
     try {
@@ -114,7 +263,7 @@ const DoctorDetailView = () => {
         payload.password = formData.password.trim();
       }
 
-      await axios.put(`${API_BASE}/doctors/${id}`, payload);
+      await axios.put(`${ADMIN_API_BASE}/doctors/${id}`, payload);
       setShowEditModal(false);
       await loadDoctor();
       alert("Cập nhật hồ sơ bác sĩ thành công!");
@@ -127,10 +276,12 @@ const DoctorDetailView = () => {
   };
 
   const handleLockAccount = async () => {
+    if (!canManageDoctor) return;
+
     setLocking(true);
 
     try {
-      await axios.delete(`${API_BASE}/employees/${id}`);
+      await axios.delete(`${ADMIN_API_BASE}/employees/${id}`);
       setShowDeleteModal(false);
       alert("Khóa tài khoản thành công!");
       navigate(-1);
@@ -151,17 +302,6 @@ const DoctorDetailView = () => {
     return date.toLocaleDateString("vi-VN");
   };
 
-  const getDayName = (date) => {
-    const day = date.getDay();
-    if (day === 0) return "CN";
-    return `Thứ ${day + 1}`;
-  };
-
-  const getDayDate = (date) =>
-    `${String(date.getDate()).padStart(2, "0")}/${String(
-      date.getMonth() + 1,
-    ).padStart(2, "0")}`;
-
   const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
     doctor?.fullName || "Doctor",
   )}&background=eaf7ed&color=264b33&size=120`;
@@ -172,7 +312,7 @@ const DoctorDetailView = () => {
       : fallbackAvatar;
 
   if (loading) {
-    return <div className="container-fluid p-4">Đang tải dữ liệu...</div>;
+    return <div className="container-fluid p-4">Đang tải...</div>;
   }
 
   if (!doctor) {
@@ -191,8 +331,8 @@ const DoctorDetailView = () => {
         <a
           href="#"
           className="text-decoration-none text-muted mb-4 d-inline-block fw-bold back-link text-start w-100"
-          onClick={(e) => {
-            e.preventDefault();
+          onClick={(event) => {
+            event.preventDefault();
             navigate(-1);
           }}
         >
@@ -212,9 +352,9 @@ const DoctorDetailView = () => {
                     height: "100px",
                     borderWidth: "3px",
                   }}
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = fallbackAvatar;
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = fallbackAvatar;
                   }}
                 />
                 <div className="d-flex flex-column align-items-start">
@@ -228,7 +368,7 @@ const DoctorDetailView = () => {
                     {doctor.fullName || "Chưa cập nhật"}
                   </h3>
                   <div
-                    className="badge bg-light text-success border border-success-subtle px-3 py-2 rounded-pill  text-start"
+                    className="badge bg-light text-success border border-success-subtle px-3 py-2 rounded-pill text-start"
                     style={{ fontSize: "0.85rem" }}
                   >
                     <i className="fa-solid fa-stethoscope me-1"></i>
@@ -239,22 +379,24 @@ const DoctorDetailView = () => {
                 </div>
               </div>
 
-              <button
-                className="btn btn-light rounded-circle border shadow-sm"
-                style={{ width: "45px", height: "45px" }}
-                title="Chỉnh sửa hồ sơ"
-                type="button"
-                onClick={() => setShowEditModal(true)}
-              >
-                <i className="fa-solid fa-pen text-muted"></i>
-              </button>
+              {canManageDoctor && (
+                <button
+                  className="btn btn-light rounded-circle border shadow-sm"
+                  style={{ width: "45px", height: "45px" }}
+                  title="Chỉnh sửa hồ sơ"
+                  type="button"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <i className="fa-solid fa-pen text-muted"></i>
+                </button>
+              )}
             </div>
           </div>
 
           <div className="col-lg-8">
             <DoctorWeeklySchedule
               doctorId={doctor.id || id}
-              viewerRole={"RECEPTIONIST"}
+              viewerRole={user?.role || "RECEPTIONIST"}
               viewerId={Number(user?.accountId) || Number(doctor.id) || 1}
             />
 
@@ -263,14 +405,14 @@ const DoctorDetailView = () => {
                 className="fw-bold text-muted mb-3 text-start"
                 style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
               >
-                Giới thiệu (Bio)
+                Giới thiệu
               </h6>
               <p
                 className="text-muted mb-0 text-start"
                 style={{ fontSize: "0.95rem", lineHeight: 1.6 }}
               >
                 {doctor.bio ||
-                  "Hiện chưa có thông tin giới thiệu cho bác sĩ này."}
+                  "Hiện chưa có thông tin giới thiệu của bác sĩ này."}
               </p>
             </div>
           </div>
@@ -307,7 +449,7 @@ const DoctorDetailView = () => {
                     Điện thoại
                   </div>
                   <span className="fw-bold text-dark">
-                    {doctor.phone || "Chưa cập nhật"}
+                    {doctor.phone || "Chua cap nhat"}
                   </span>
                 </div>
               </div>
@@ -338,7 +480,7 @@ const DoctorDetailView = () => {
                     className="fw-bold text-dark"
                     style={{ wordBreak: "break-all" }}
                   >
-                    {doctor.email || "Chưa cập nhật"}
+                    {doctor.email || "Chua cap nhat"}
                   </span>
                 </div>
               </div>
@@ -371,21 +513,25 @@ const DoctorDetailView = () => {
                 </div>
               </div>
 
-              <hr className="text-muted opacity-25 my-4" />
+              {canManageDoctor && (
+                <>
+                  <hr className="text-muted opacity-25 my-4" />
 
-              <button
-                className="btn btn-outline-danger w-100 fw-bold rounded-pill"
-                type="button"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <i className="fa-solid fa-lock me-2"></i> Khóa tài khoản
-              </button>
+                  <button
+                    className="btn btn-outline-danger w-100 fw-bold rounded-pill"
+                    type="button"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <i className="fa-solid fa-lock me-2"></i> Khóa tài khoản
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {showEditModal && (
+      {canManageDoctor && showEditModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
@@ -409,8 +555,8 @@ const DoctorDetailView = () => {
                   className="modal-title fw-bold text-success"
                   id="editDoctorModalLabel"
                 >
-                  <i className="fa-solid fa-user-doctor me-2"></i> Cập nhật hồ
-                  sơ
+                  <i className="fa-solid fa-user-doctor me-2"></i> Cap nhat ho
+                  so
                 </h5>
 
                 <button
@@ -437,7 +583,7 @@ const DoctorDetailView = () => {
                         name="fullName"
                         value={formData.fullName}
                         onChange={handleInputChange}
-                        placeholder="VD: Nguyễn Văn A"
+                        placeholder="VD: Nguyen Van A"
                         required
                       />
                     </div>
@@ -497,7 +643,7 @@ const DoctorDetailView = () => {
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        placeholder="••••••••"
+                        placeholder="........"
                       />
                     </div>
                   </div>
@@ -538,7 +684,7 @@ const DoctorDetailView = () => {
                         name="degree"
                         value={formData.degree}
                         onChange={handleInputChange}
-                        placeholder="VD: Tiến sĩ"
+                        placeholder="VD: Tien si"
                         required
                       />
                     </div>
@@ -558,16 +704,14 @@ const DoctorDetailView = () => {
                     </div>
 
                     <div className="col-12">
-                      <label className="form-label fw-medium">
-                        Giới thiệu tiểu sử
-                      </label>
+                      <label className="form-label fw-medium">Tiểu sử</label>
                       <textarea
                         className="form-control"
                         rows="3"
                         name="bio"
                         value={formData.bio}
                         onChange={handleInputChange}
-                        placeholder="Nhập kinh nghiệm làm việc, giới thiệu bản thân..."
+                        placeholder="Nhap kinh nghiem lam viec, gioi thieu ban than..."
                       ></textarea>
                     </div>
                   </div>
@@ -591,7 +735,7 @@ const DoctorDetailView = () => {
                       className="btn btn-primary-custom"
                       disabled={saving}
                     >
-                      {saving ? "Đang lưu..." : "Lưu"}
+                      {saving ? "Dang luu..." : "Luu"}
                     </button>
                   </div>
                 </form>
@@ -601,7 +745,7 @@ const DoctorDetailView = () => {
         </div>
       )}
 
-      {showDeleteModal && (
+      {canManageDoctor && showDeleteModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
@@ -621,9 +765,9 @@ const DoctorDetailView = () => {
                   ></i>
                 </div>
 
-                <h5 className="fw-bold mb-2 text-dark">Xác nhận khóa?</h5>
+                <h5 className="fw-bold mb-2 text-dark">Xac nhan khoa?</h5>
                 <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
-                  Bạn có chắc chắn muốn khóa tài khoản bác sĩ này khỏi hệ thống?
+                  Bạn có chắc chắn muốn xóa tài khoản này khỏi hệ thống ?
                 </p>
 
                 <div className="d-flex justify-content-center gap-2">

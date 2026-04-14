@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 
 function StatCard({ icon, iconColor, title, value }) {
@@ -17,9 +18,27 @@ function StatCard({ icon, iconColor, title, value }) {
   );
 }
 
+function QuickLinkCard({ to, icon, title, description, iconColor }) {
+  return (
+    <div className="col">
+      <Link
+        to={to}
+        className="card border-0 shadow-sm h-100 text-decoration-none text-dark"
+      >
+        <div className="card-body p-3">
+          <div className={`fs-3 mb-3 ${iconColor}`}>
+            <i className={`fa-solid ${icon}`}></i>
+          </div>
+          <h6 className="fw-bold mb-2">{title}</h6>
+          <p className="text-muted mb-0 small">{description}</p>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 function DashboardView() {
   const { user } = useAuth();
-
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -52,15 +71,43 @@ function DashboardView() {
     );
   }
 
+  let quickLinks = [];
+
+  if (user?.role === "RECEPTIONIST") {
+    quickLinks = [
+      {
+        to: "/dashboard/patients",
+        icon: "fa-hospital-user",
+        iconColor: "text-success",
+        title: "Danh sách bệnh nhân",
+      },
+      {
+        to: "/dashboard/staff",
+        icon: "fa-user-doctor",
+        iconColor: "text-primary",
+        title: "Danh sách bác sĩ",
+      },
+    ];
+  } else if (user?.role === "ADMIN") {
+    quickLinks = [
+      {
+        to: "/dashboard/staff",
+        icon: "fa-users",
+        iconColor: "text-danger",
+        title: "Quản lý nhân sự",
+      },
+    ];
+  }
+
   return (
     <div>
       <div
         className="rounded-4 p-4 mb-4 text-white"
         style={{ background: "linear-gradient(135deg, #198754, #20c997)" }}
       >
-        <h4 className="fw-bold mb-1">Chào mừng trở lại! 👋</h4>
+        <h4 className="fw-bold mb-1">Chào mừng trở lại!</h4>
         <p className="mb-0 opacity-75">
-          {user?.fullName} — {user?.role}
+          {user?.fullName} - {user?.role}
         </p>
       </div>
 
@@ -81,7 +128,7 @@ function DashboardView() {
         />
         <StatCard
           icon="fa-calendar-check"
-          iconColor="text-purple"
+          iconColor="text-info"
           title="Ca trực hôm nay"
           value={stats?.todayShifts}
         />
@@ -92,6 +139,17 @@ function DashboardView() {
           value={stats?.satisfaction}
         />
       </div>
+
+      {quickLinks.length > 0 && (
+        <>
+          <h5 className="fw-bold mt-4 mb-3">Truy cap nhanh</h5>
+          <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+            {quickLinks.map((item) => (
+              <QuickLinkCard key={item.to} {...item} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

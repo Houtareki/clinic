@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const SHIFT_API = "/api/shifts";
@@ -73,18 +67,6 @@ const normalizeText = (value) =>
 const normalizeShiftDate = (shift) => {
   const raw = shift?.shiftDate || shift?.date || shift?.workDate;
   return raw ? String(raw).slice(0, 10) : "";
-};
-
-const parseApiDate = (value) => {
-  if (!value) return null;
-
-  const [year, month, day] = String(value).slice(0, 10).split("-").map(Number);
-
-  if (!year || !month || !day) {
-    return null;
-  }
-
-  return new Date(year, month - 1, day);
 };
 
 const normalizeShiftType = (shift) => {
@@ -182,29 +164,6 @@ const hasShiftOnDate = (shifts, date, type) => {
   );
 };
 
-const findNearestShiftDate = (shifts, referenceDate) => {
-  const referenceTime = new Date(referenceDate).setHours(0, 0, 0, 0);
-
-  return shifts.reduce((nearest, shift) => {
-    const shiftDate = parseApiDate(normalizeShiftDate(shift));
-
-    if (!shiftDate) {
-      return nearest;
-    }
-
-    const distance = Math.abs(shiftDate.setHours(0, 0, 0, 0) - referenceTime);
-
-    if (!nearest || distance < nearest.distance) {
-      return {
-        date: shiftDate,
-        distance,
-      };
-    }
-
-    return nearest;
-  }, null);
-};
-
 const DoctorWeeklySchedule = ({
   doctorId,
   viewerRole = "RECEPTIONIST",
@@ -216,7 +175,6 @@ const DoctorWeeklySchedule = ({
   const [errorText, setErrorText] = useState("");
   const [noticeText, setNoticeText] = useState("");
   const [hasAnyDoctorShift, setHasAnyDoctorShift] = useState(null);
-  const hasAutoJumpedRef = useRef(false);
 
   const now = useMemo(() => new Date(), []);
   const {
@@ -236,7 +194,6 @@ const DoctorWeeklySchedule = ({
   );
 
   useEffect(() => {
-    hasAutoJumpedRef.current = false;
     setNoticeText("");
     setHasAnyDoctorShift(null);
     setBaseDate(new Date());
@@ -268,48 +225,9 @@ const DoctorWeeklySchedule = ({
         matchesDoctor(shift, doctorId),
       );
 
-      if (doctorShifts.length > 0) {
-        setHasAnyDoctorShift(true);
-      }
+      setHasAnyDoctorShift(doctorShifts.length > 0);
 
-      if (doctorShifts.length === 0 && !hasAutoJumpedRef.current) {
-        const searchStart = new Date(baseDate);
-        const searchEnd = new Date(baseDate);
-        searchStart.setFullYear(searchStart.getFullYear() - 1);
-        searchEnd.setFullYear(searchEnd.getFullYear() + 1);
-
-        const nearestResponse = await axios.get(SHIFT_API, {
-          params: {
-            startDate: formatApiDate(searchStart),
-            endDate: formatApiDate(searchEnd),
-          },
-          headers: {
-            "X-User-Role": viewerRole,
-            "X-User-Id": viewerId,
-          },
-        });
-
-        const nearbyShifts = Array.isArray(nearestResponse.data)
-          ? nearestResponse.data.filter((shift) =>
-              matchesDoctor(shift, doctorId),
-            )
-          : [];
-
-        setHasAnyDoctorShift(nearbyShifts.length > 0);
-
-        const nearestShift = findNearestShiftDate(nearbyShifts, baseDate);
-
-        if (nearestShift) {
-          hasAutoJumpedRef.current = true;
-          setNoticeText("Đã chuyển đến tuần gần nhất có lịch trực.");
-          setBaseDate(nearestShift.date);
-          return;
-        }
-      }
-
-      if (!hasAutoJumpedRef.current) {
-        setNoticeText("");
-      }
+      setNoticeText("");
       setShifts(doctorShifts);
     } catch (error) {
       console.error("Lỗi khi tải lịch trực:", error);

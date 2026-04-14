@@ -1,5 +1,89 @@
+.staff-view-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.staff-view-header-main {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.staff-view-header-main h4,
+.staff-view-title {
+  width: 100%;
+  margin-bottom: 0;
+  text-align: left;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.staff-view-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.staff-view-search {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 576px) {
+  .staff-view-controls {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .staff-view-search {
+    min-width: 360px;
+  }
+}
+
+@media (min-width: 992px) {
+  .staff-view-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .staff-view-controls {
+    width: auto;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .staff-view-search {
+    width: min(44vw, 460px);
+    min-width: 420px;
+  }
+}
+
+.staff-view-grid .col {
+  position: relative;
+}
+
 .staff-view-grid .staff-card {
   padding: 1.1rem;
+  overflow: visible;
+  z-index: 1;
+}
+
+.staff-view-grid .staff-card.staff-card-dropdown-open {
+  z-index: 40;
+}
+
+.staff-view-grid .staff-action-menu {
+  z-index: 50;
 }
 
 .staff-view-grid .staff-card-body {
