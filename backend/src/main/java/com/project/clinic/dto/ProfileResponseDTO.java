@@ -16,5 +16,6 @@ public class ProfileResponseDTO {
     private String avatarUrl;
 
     private String specialty;
+    private String degree;
     private String bio;
 }

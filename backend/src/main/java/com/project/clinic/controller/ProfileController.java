@@ -69,6 +69,7 @@ public class ProfileController {
             //doctor.setDoctorId(userId);
 
             if (request.getSpecialty() != null) doctor.setSpecialty(request.getSpecialty());
+            if (request.getDegree() != null) doctor.setDegree(request.getDegree());
             if (request.getBio() != null) doctor.setBio(request.getBio());
 
             doctorService.save(doctor);

@@ -11,6 +11,7 @@ import DashboardView from "./features/dashboard/DashboardView";
 import StaffView from "./features/staff/StaffView";
 import DoctorDetailView from "./features/staff/DoctorDetailView";
 import PatientView from "./features/patient/PatientView";
+import ProfileView from "./features/profile/ProfileView";
 import "./assets/css/index.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -28,7 +29,11 @@ function RoleRoute({ children, roles }) {
     return <Navigate to="/login" replace />;
   }
 
-  return roles.includes(user.role) ? children : <Navigate to="/dashboard" replace />;
+  return roles.includes(user.role) ? (
+    children
+  ) : (
+    <Navigate to="/dashboard" replace />
+  );
 }
 
 function App() {
@@ -76,6 +81,7 @@ function App() {
               </RoleRoute>
             }
           />
+          <Route path="profile" element={<ProfileView />} />
         </Route>
       </Routes>
     </BrowserRouter>

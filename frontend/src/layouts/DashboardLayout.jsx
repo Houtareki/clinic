@@ -1,4 +1,5 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 const MENU_CONFIG = {
@@ -100,10 +101,20 @@ function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const firstName = user?.fullName?.split(" ").pop() || "U";
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  function toggleDropdown() {
+    setIsDropdownOpen((prev) => !prev);
+  }
 
   function handleLogout() {
+    setIsDropdownOpen(false);
     logout();
     navigate("/login");
+  }
+
+  function handleOpenProfile() {
+    setIsDropdownOpen(false);
   }
 
   return (
@@ -111,7 +122,7 @@ function Header() {
       <div className="dropdown ms-auto">
         <div
           className="d-flex align-items-center gap-2 dropdown-toggle"
-          data-bs-toggle="dropdown"
+          onClick={toggleDropdown}
           style={{ cursor: "pointer" }}
         >
           <div className="text-end d-none d-md-block">
@@ -131,12 +142,18 @@ function Header() {
           />
         </div>
 
-        <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+        <ul
+          className={`dropdown-menu dropdown-menu-end shadow border-0 mt-2 ${isDropdownOpen ? "show" : ""}`}
+        >
           <li>
-            <a className="dropdown-item py-2" href="#">
+            <Link
+              className="dropdown-item py-2"
+              to="/dashboard/profile"
+              onClick={handleOpenProfile}
+            >
               <i className="fa-regular fa-user me-2 text-primary"></i>
               Hồ sơ cá nhân
-            </a>
+            </Link>
           </li>
           <li>
             <hr className="dropdown-divider" />
