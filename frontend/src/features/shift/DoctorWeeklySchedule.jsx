@@ -164,6 +164,54 @@ const hasShiftOnDate = (shifts, date, type) => {
   );
 };
 
+const toFiniteNumber = (value) => {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+};
+
+const getScheduleRequestHeaders = (doctorId, viewerRole, viewerId) => {
+  const normalizedDoctorId = toFiniteNumber(doctorId);
+  const normalizedViewerId = toFiniteNumber(viewerId);
+  const normalizedViewerRole = String(viewerRole || "")
+    .trim()
+    .toUpperCase();
+
+  if (
+    normalizedViewerRole === "DOCTOR" &&
+    normalizedDoctorId !== null &&
+    normalizedViewerId === normalizedDoctorId
+  ) {
+    return {
+      role: "DOCTOR",
+      userId: normalizedViewerId,
+    };
+  }
+
+  return {
+    role: "RECEPTIONIST",
+    userId: normalizedViewerId ?? normalizedDoctorId ?? 1,
+  };
+};
+
+const extractErrorMessage = (error, fallbackMessage) => {
+  const responseData = error?.response?.data;
+
+  if (typeof responseData === "string" && responseData.trim() !== "") {
+    return responseData;
+  }
+
+  if (
+    responseData &&
+    typeof responseData === "object" &&
+    typeof responseData.message === "string" &&
+    responseData.message.trim() !== ""
+  ) {
+    return responseData.message;
+  }
+
+  return fallbackMessage;
+};
+
 const DoctorWeeklySchedule = ({
   doctorId,
   viewerRole = "RECEPTIONIST",
@@ -182,6 +230,10 @@ const DoctorWeeklySchedule = ({
     startDate,
     endDate,
   } = useMemo(() => getWeekRange(baseDate), [baseDate]);
+  const requestHeaders = useMemo(
+    () => getScheduleRequestHeaders(doctorId, viewerRole, viewerId),
+    [doctorId, viewerId, viewerRole],
+  );
 
   const weekRangeLabel = useMemo(() => getWeekRangeLabel(weekDays), [weekDays]);
 
@@ -215,8 +267,8 @@ const DoctorWeeklySchedule = ({
       const response = await axios.get(SHIFT_API, {
         params: { startDate, endDate },
         headers: {
-          "X-User-Role": viewerRole,
-          "X-User-Id": viewerId,
+          "X-User-Role": requestHeaders.role,
+          "X-User-Id": requestHeaders.userId,
         },
       });
 
@@ -232,14 +284,17 @@ const DoctorWeeklySchedule = ({
     } catch (error) {
       console.error("Lỗi khi tải lịch trực:", error);
       setErrorText(
-        error.response?.data || "Không thể tải lịch trực của bác sĩ.",
+        extractErrorMessage(
+          error,
+          "Không thể tải lịch trực của bác sĩ.",
+        ),
       );
       setShifts([]);
       setHasAnyDoctorShift(null);
     } finally {
       setLoading(false);
     }
-  }, [baseDate, doctorId, endDate, startDate, viewerId, viewerRole]);
+  }, [doctorId, endDate, requestHeaders.role, requestHeaders.userId, startDate]);
 
   useEffect(() => {
     loadShifts();

@@ -14,7 +14,8 @@ public class DoctorSimpleMapper {
 
         dto.setId(acc.getId());
         dto.setFullName(acc.getFullName());
-
+        dto.setEmail(acc.getEmail());
+        dto.setPhone(acc.getPhone());
         if (doc != null) {
             dto.setSpecialty(doc.getSpecialty());
             dto.setDegree(doc.getDegree());

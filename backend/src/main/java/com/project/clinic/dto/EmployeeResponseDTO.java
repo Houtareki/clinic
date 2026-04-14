@@ -17,5 +17,6 @@ public class EmployeeResponseDTO {
     private String phone;
     private String role;
     private String avatarUrl;
+    private String createdAt;
     private boolean isActive;
 }

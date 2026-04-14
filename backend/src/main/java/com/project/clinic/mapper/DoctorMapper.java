@@ -23,6 +23,7 @@ public class DoctorMapper {
         dto.setRole(account.getRole().name());
         dto.setAvatarUrl(account.getAvatarUrl());
         dto.setActive(account.isActive());
+        dto.setCreatedAt(account.getCreatedAt().toString());
 
         if (doctor != null) {
             dto.setSpecialty(doctor.getSpecialty());

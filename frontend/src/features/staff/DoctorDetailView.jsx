@@ -418,7 +418,7 @@ const DoctorDetailView = () => {
           </div>
 
           <div className="col-lg-4">
-            <div className="detail-card p-4 h-100">
+            <div className="detail-card p-4 h-100 text-start">
               <h6
                 className="fw-bold text-muted mb-4"
                 style={{ fontSize: "0.85rem", textTransform: "uppercase" }}
