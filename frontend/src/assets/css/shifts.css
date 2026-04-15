@@ -296,11 +296,14 @@ body {
   flex-direction: column;
   z-index: 10;
   border-top: 5px solid greenyellow;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shift-block.shift-block-clickable {
   cursor: pointer;
 }
 
-.shift-block:hover {
+.shift-block.shift-block-clickable:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
@@ -382,6 +385,102 @@ body {
 .custom-input::placeholder {
   color: #a0a5ba;
   font-weight: 400;
+}
+
+.doctor-select {
+  position: relative;
+}
+
+.doctor-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.doctor-select-trigger:disabled {
+  cursor: not-allowed;
+}
+
+.doctor-select-trigger-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #a0a5ba;
+}
+
+.doctor-select-trigger-text.has-value {
+  color: #212529;
+}
+
+.doctor-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.doctor-select-search-input {
+  padding-left: 40px;
+}
+
+.doctor-select-options {
+  margin-top: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doctor-select-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.doctor-select-option:hover {
+  background-color: #f0fdfa;
+  border-color: #4dc4c0;
+}
+
+.doctor-select-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.doctor-select-option-name {
+  color: #212529;
+  font-weight: 600;
+}
+
+.doctor-select-option-meta {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.doctor-select-empty {
+  padding: 12px;
+  text-align: center;
+  color: #94a3b8;
+  background-color: #f8fafc;
+  border-radius: 12px;
 }
 
 .room-tag-group {
