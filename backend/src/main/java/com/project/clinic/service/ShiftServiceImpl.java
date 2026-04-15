@@ -58,7 +58,7 @@ public class ShiftServiceImpl implements ShiftService {
             return shift.get();
         }
 
-        throw new RuntimeException("Khong tim thay ca truc");
+        throw new RuntimeException("Không tìm thấy ca trực với ID: " + id);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ShiftServiceImpl implements ShiftService {
 
         for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
             Room room = roomRepository.findById(assignmentDTO.getRoomId())
-                    .orElseThrow(() -> new RuntimeException("Khong tim thay phong"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
 
             ShiftRoom shiftRoom = new ShiftRoom();
             shiftRoom.setShift(shift);
@@ -102,7 +102,7 @@ public class ShiftServiceImpl implements ShiftService {
 
             for (Integer doctorId : assignmentDTO.getDoctorIds()) {
                 Doctor doctor = doctorRepository.findByDoctorId(doctorId)
-                        .orElseThrow(() -> new RuntimeException("Khong tim thay bac si"));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
 
                 ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
                 shiftRoomDoctor.setShiftRoom(shiftRoom);
@@ -122,7 +122,7 @@ public class ShiftServiceImpl implements ShiftService {
     @Transactional
     public Shift updateShift(int id, ShiftRequestDTO request) {
         Shift existingShift = shiftRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay ca truc voi ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ca trực với ID: " + id));
 
         String existingPeriodKey = getPeriodKey(existingShift.getPeriod());
         String requestedPeriodKey = getPeriodKey(request.getPeriod());
@@ -132,7 +132,7 @@ public class ShiftServiceImpl implements ShiftService {
         boolean hasSlotConflict = hasSlotConflict(request.getShiftDate(), requestedPeriodKey, id);
 
         if (hasSlotConflict && !isSameLogicalSlot) {
-            throw new RuntimeException("Ca truc nay da ton tai cho ngay va buoi duoc chon");
+            throw new RuntimeException("Ca trực này đã tồn tại cho ngày và buổi được chọn");
         }
 
         existingShift.setShiftDate(request.getShiftDate());
@@ -153,7 +153,7 @@ public class ShiftServiceImpl implements ShiftService {
 
         for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
             Room room = roomRepository.findById(assignmentDTO.getRoomId())
-                    .orElseThrow(() -> new RuntimeException("Khong tim thay phong"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
 
             ShiftRoom shiftRoom = existingShift.getShiftRooms().stream()
                     .filter(currentRoom -> currentRoom.getRoom().getRoomId() == assignmentDTO.getRoomId())
@@ -185,7 +185,7 @@ public class ShiftServiceImpl implements ShiftService {
                 }
 
                 Doctor doctor = doctorRepository.findByDoctorId(doctorId)
-                        .orElseThrow(() -> new RuntimeException("Khong tim thay bac si"));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
 
                 ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
                 shiftRoomDoctor.setShiftRoom(shiftRoom);
@@ -201,7 +201,7 @@ public class ShiftServiceImpl implements ShiftService {
     @Transactional
     public void deleteShift(int id) {
         if (!shiftRepository.existsById(id)) {
-            throw new RuntimeException("Khong tim thay ca truc");
+            throw new RuntimeException("Không tìm thấy ca trực với ID: " + id);
         }
 
         shiftRepository.deleteById(id);
@@ -209,7 +209,7 @@ public class ShiftServiceImpl implements ShiftService {
 
     private void ensureNoSlotConflict(LocalDate shiftDate, String periodKey, Integer excludedShiftId) {
         if (hasSlotConflict(shiftDate, periodKey, excludedShiftId)) {
-            throw new RuntimeException("Ca truc nay da ton tai cho ngay va buoi duoc chon");
+            throw new RuntimeException("Ca trực này đã tồn tại cho ngày và buổi được chọn");
         }
     }
 
@@ -234,7 +234,7 @@ public class ShiftServiceImpl implements ShiftService {
                 .trim();
 
         if (
-                normalized.contains("chieu") ||
+                normalized.contains("Chiều") ||
                 normalized.contains("afternoon") ||
                 normalized.contains("1300")
         ) {

@@ -28,7 +28,7 @@ export async function getDashboardStats({ role, accountId }) {
     throw new Error(
       typeof payload === "string" && payload.trim() !== ""
         ? payload
-        : "Khong tai duoc so lieu dashboard.",
+        : "Không tải được dữ liệu dashboard.",
     );
   }
 

@@ -19,13 +19,22 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
       style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "16px" }}>
+        <div
+          className="modal-content border-0 shadow-lg"
+          style={{ borderRadius: "16px" }}
+        >
           <div
             className="modal-header"
-            style={{ backgroundColor: "#f5f8fa", borderRadius: "16px 16px 0 0" }}
+            style={{
+              backgroundColor: "#f5f8fa",
+              borderRadius: "16px 16px 0 0",
+            }}
           >
-            <h5 className="modal-title fw-bold text-success" id="editDoctorModalLabel">
-              <i className="fa-solid fa-user-doctor me-2"></i> Cap nhat ho so
+            <h5
+              className="modal-title fw-bold text-success"
+              id="editDoctorModalLabel"
+            >
+              <i className="fa-solid fa-user-doctor me-2"></i> Cập nhật hồ sơ
             </h5>
 
             <button
@@ -38,7 +47,9 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
 
           <div className="modal-body p-4">
             <form onSubmit={onSubmit}>
-              <h6 className="fw-bold mb-3 text-muted">1. Thông tin tài khoản</h6>
+              <h6 className="fw-bold mb-3 text-muted">
+                1. Thông tin tài khoản
+              </h6>
               <div className="row g-3 mb-4">
                 <div className="col-md-6">
                   <label className="form-label fw-medium">
@@ -179,7 +190,11 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
                 className="modal-footer mt-4"
                 style={{ borderTop: "1px solid #eaedf1", paddingTop: "1rem" }}
               >
-                <button type="button" className="btn btn-light border" onClick={onClose}>
+                <button
+                  type="button"
+                  className="btn btn-light border"
+                  onClick={onClose}
+                >
                   Hủy
                 </button>
                 <button

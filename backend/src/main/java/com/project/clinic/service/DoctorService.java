@@ -2,7 +2,6 @@ package com.project.clinic.service;
 
 import com.project.clinic.entity.Doctor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;

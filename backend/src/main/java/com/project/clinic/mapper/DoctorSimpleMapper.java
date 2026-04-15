@@ -1,6 +1,5 @@
 package com.project.clinic.mapper;
 
-import com.project.clinic.dto.DoctorResponseDTO;
 import com.project.clinic.dto.DoctorSimpleResponseDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.entity.Doctor;

@@ -41,18 +41,36 @@ const DoctorDetailView = () => {
     const requestConfigs = isAdminViewer
       ? [
           { type: "detail", url: `${ADMIN_API_BASE}/doctors/${id}` },
-          { type: "doctor-list", url: `${ADMIN_API_BASE}/doctors`, params: { page: 0, size: 100 } },
-          { type: "employee-list", url: `${ADMIN_API_BASE}/employees`, params: { page: 0, size: 100 } },
+          {
+            type: "doctor-list",
+            url: `${ADMIN_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
+          {
+            type: "employee-list",
+            url: `${ADMIN_API_BASE}/employees`,
+            params: { page: 0, size: 100 },
+          },
         ]
       : [
           { type: "detail", url: `${RECEPTIONIST_API_BASE}/doctors/${id}` },
-          { type: "doctor-list", url: `${RECEPTIONIST_API_BASE}/doctors`, params: { page: 0, size: 100 } },
+          {
+            type: "doctor-list",
+            url: `${RECEPTIONIST_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
           { type: "fallback-detail", url: `${ADMIN_API_BASE}/doctors/${id}` },
-          { type: "fallback-doctor-list", url: `${ADMIN_API_BASE}/doctors`, params: { page: 0, size: 100 } },
+          {
+            type: "fallback-doctor-list",
+            url: `${ADMIN_API_BASE}/doctors`,
+            params: { page: 0, size: 100 },
+          },
         ];
 
     const results = await Promise.allSettled(
-      requestConfigs.map((config) => axios.get(config.url, { params: config.params })),
+      requestConfigs.map((config) =>
+        axios.get(config.url, { params: config.params }),
+      ),
     );
 
     const matchedSources = [];
@@ -88,9 +106,10 @@ const DoctorDetailView = () => {
     const mergedDoctor = buildDoctorRecord(doctorId, matchedSources);
 
     if (!mergedDoctor) {
-      console.error("Loi khi tai chi tiet bac si:", lastError);
+      console.error("Lỗi khi tải chi tiết bác sĩ:", lastError);
       setErrorText(
-        lastError?.response?.data || "Khong the tai thong tin bac si tu he thong.",
+        lastError?.response?.data ||
+          "Không thể tải thông tin bác sĩ từ hệ thống.",
       );
       setDoctor(null);
       setLoading(false);
@@ -248,7 +267,12 @@ const DoctorDetailView = () => {
             <DoctorWeeklySchedule
               doctorId={doctor.doctorId || doctor.id || id}
               viewerRole={user?.role || "RECEPTIONIST"}
-              viewerId={Number(user?.accountId) || Number(doctor.accountId) || Number(doctor.id) || 1}
+              viewerId={
+                Number(user?.accountId) ||
+                Number(doctor.accountId) ||
+                Number(doctor.id) ||
+                1
+              }
             />
             <DoctorBioCard doctor={doctor} />
           </div>

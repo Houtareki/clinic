@@ -5,7 +5,6 @@ import com.project.clinic.dto.PatientResponseDTO;
 import com.project.clinic.entity.Account;
 import com.project.clinic.entity.Doctor;
 import com.project.clinic.entity.Patient;
-import com.project.clinic.mapper.DoctorMapper;
 import com.project.clinic.mapper.DoctorSimpleMapper;
 import com.project.clinic.mapper.PatientMapper;
 import com.project.clinic.service.AccountService;
@@ -17,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/receptionist")
