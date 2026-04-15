@@ -1,216 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-
-const SHIFT_API = "/api/shifts";
-
-const formatApiDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const SHIFT_TIME_LABELS = {
-  morning: "08:00 - 12:00",
-  afternoon: "13:00 - 17:00",
-  evening: "17:00 - 21:00",
-};
-
-const getWeekRange = (baseDate) => {
-  const current = new Date(baseDate);
-  current.setHours(0, 0, 0, 0);
-
-  const monday = new Date(current);
-  const dayIndex = (current.getDay() + 6) % 7;
-  monday.setDate(current.getDate() - dayIndex);
-
-  const dates = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
-    return date;
-  });
-
-  return {
-    dates,
-    startDate: formatApiDate(dates[0]),
-    endDate: formatApiDate(dates[6]),
-  };
-};
-
-const getDayName = (date) => {
-  const day = date.getDay();
-  if (day === 0) return "CN";
-  return `Thứ ${day + 1}`;
-};
-
-const getDayDate = (date) =>
-  `${String(date.getDate()).padStart(2, "0")}/${String(
-    date.getMonth() + 1,
-  ).padStart(2, "0")}`;
-
-const getWeekRangeLabel = (weekDays) => {
-  const formatShort = (date) =>
-    `${String(date.getDate()).padStart(2, "0")}/${String(
-      date.getMonth() + 1,
-    ).padStart(2, "0")}`;
-
-  return `${formatShort(weekDays[0])} - ${formatShort(weekDays[6])}`;
-};
-
-const normalizeText = (value) =>
-  String(value || "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-const normalizeShiftDate = (shift) => {
-  const raw = shift?.shiftDate || shift?.date || shift?.workDate;
-  return raw ? String(raw).slice(0, 10) : "";
-};
-
-const normalizeShiftType = (shift) => {
-  const raw = normalizeText(
-    shift?.periodDisplay ||
-      shift?.period ||
-      shift?.shiftType ||
-      shift?.type ||
-      shift?.session ||
-      shift?.name,
-  );
-
-  if (
-    raw.includes("sang") ||
-    raw.includes("morning") ||
-    raw.includes("am") ||
-    raw.includes("ca 1") ||
-    raw.includes("08:00")
-  ) {
-    return "morning";
-  }
-
-  if (
-    raw.includes("chieu") ||
-    raw.includes("afternoon") ||
-    raw.includes("pm") ||
-    raw.includes("ca 2") ||
-    raw.includes("13:00")
-  ) {
-    return "afternoon";
-  }
-
-  if (
-    raw.includes("toi") ||
-    raw.includes("night") ||
-    raw.includes("evening") ||
-    raw.includes("ca 3") ||
-    raw.includes("18:00")
-  ) {
-    return "evening";
-  }
-
-  return "";
-};
-
-const normalizeDoctorId = (shift) =>
-  Number(
-    shift?.doctorId ??
-      shift?.doctor?.id ??
-      shift?.accountId ??
-      shift?.userId ??
-      shift?.doctorAccountId,
-  );
-
-const getShiftDoctorIds = (shift) => {
-  const doctorIds = [];
-  const directDoctorId = normalizeDoctorId(shift);
-
-  if (Number.isFinite(directDoctorId)) {
-    doctorIds.push(directDoctorId);
-  }
-
-  for (const room of shift?.rooms || []) {
-    for (const doctor of room?.doctors || []) {
-      const nestedDoctorId = Number(
-        doctor?.doctorId ?? doctor?.id ?? doctor?.accountId,
-      );
-
-      if (Number.isFinite(nestedDoctorId)) {
-        doctorIds.push(nestedDoctorId);
-      }
-    }
-  }
-
-  return [...new Set(doctorIds)];
-};
-
-const matchesDoctor = (shift, doctorId) => {
-  const targetDoctorId = Number(doctorId);
-
-  if (!Number.isFinite(targetDoctorId)) {
-    return false;
-  }
-
-  return getShiftDoctorIds(shift).includes(targetDoctorId);
-};
-
-const hasShiftOnDate = (shifts, date, type) => {
-  const dateKey = formatApiDate(date);
-
-  return shifts.some(
-    (shift) =>
-      normalizeShiftDate(shift) === dateKey &&
-      normalizeShiftType(shift) === type,
-  );
-};
-
-const toFiniteNumber = (value) => {
-  const parsedValue = Number(value);
-  return Number.isFinite(parsedValue) ? parsedValue : null;
-};
-
-const getScheduleRequestHeaders = (doctorId, viewerRole, viewerId) => {
-  const normalizedDoctorId = toFiniteNumber(doctorId);
-  const normalizedViewerId = toFiniteNumber(viewerId);
-  const normalizedViewerRole = String(viewerRole || "")
-    .trim()
-    .toUpperCase();
-
-  if (
-    normalizedViewerRole === "DOCTOR" &&
-    normalizedDoctorId !== null &&
-    normalizedViewerId === normalizedDoctorId
-  ) {
-    return {
-      role: "DOCTOR",
-      userId: normalizedViewerId,
-    };
-  }
-
-  return {
-    role: "RECEPTIONIST",
-    userId: normalizedViewerId ?? normalizedDoctorId ?? 1,
-  };
-};
-
-const extractErrorMessage = (error, fallbackMessage) => {
-  const responseData = error?.response?.data;
-
-  if (typeof responseData === "string" && responseData.trim() !== "") {
-    return responseData;
-  }
-
-  if (
-    responseData &&
-    typeof responseData === "object" &&
-    typeof responseData.message === "string" &&
-    responseData.message.trim() !== ""
-  ) {
-    return responseData.message;
-  }
-
-  return fallbackMessage;
-};
+import WeeklyScheduleGrid from "./components/WeeklyScheduleGrid";
+import {
+  extractErrorMessage,
+  filterDoctorShifts,
+  getScheduleRequestHeaders,
+  getWeekRange,
+  getWeekRangeLabel,
+  SHIFT_API,
+} from "./doctorScheduleUtils";
 
 const DoctorWeeklySchedule = ({
   doctorId,
@@ -234,7 +32,6 @@ const DoctorWeeklySchedule = ({
     () => getScheduleRequestHeaders(doctorId, viewerRole, viewerId),
     [doctorId, viewerId, viewerRole],
   );
-
   const weekRangeLabel = useMemo(() => getWeekRangeLabel(weekDays), [weekDays]);
 
   const isToday = useCallback(
@@ -273,21 +70,15 @@ const DoctorWeeklySchedule = ({
       });
 
       const allShifts = Array.isArray(response.data) ? response.data : [];
-      const doctorShifts = allShifts.filter((shift) =>
-        matchesDoctor(shift, doctorId),
-      );
+      const doctorShifts = filterDoctorShifts(allShifts, doctorId);
 
       setHasAnyDoctorShift(doctorShifts.length > 0);
-
       setNoticeText("");
       setShifts(doctorShifts);
     } catch (error) {
       console.error("Lỗi khi tải lịch trực:", error);
       setErrorText(
-        extractErrorMessage(
-          error,
-          "Không thể tải lịch trực của bác sĩ.",
-        ),
+        extractErrorMessage(error, "Không thể tải lịch trực của bác sĩ."),
       );
       setShifts([]);
       setHasAnyDoctorShift(null);
@@ -300,20 +91,11 @@ const DoctorWeeklySchedule = ({
     loadShifts();
   }, [loadShifts]);
 
-  const goPrevWeek = () => {
+  const updateWeek = (offset) => {
     setNoticeText("");
     setBaseDate((prev) => {
       const next = new Date(prev);
-      next.setDate(next.getDate() - 7);
-      return next;
-    });
-  };
-
-  const goNextWeek = () => {
-    setNoticeText("");
-    setBaseDate((prev) => {
-      const next = new Date(prev);
-      next.setDate(next.getDate() + 7);
+      next.setDate(next.getDate() + offset);
       return next;
     });
   };
@@ -327,15 +109,12 @@ const DoctorWeeklySchedule = ({
             className="btn btn-light border rounded-circle"
             style={{ width: "35px", height: "35px", padding: 0 }}
             type="button"
-            onClick={goPrevWeek}
+            onClick={() => updateWeek(-7)}
           >
             <i className="fa-solid fa-chevron-left"></i>
           </button>
 
-          <span
-            className="fw-bold px-2 text-muted"
-            style={{ fontSize: "0.9rem" }}
-          >
+          <span className="fw-bold px-2 text-muted" style={{ fontSize: "0.9rem" }}>
             {weekRangeLabel}
           </span>
 
@@ -343,7 +122,7 @@ const DoctorWeeklySchedule = ({
             className="btn btn-light border rounded-circle"
             style={{ width: "35px", height: "35px", padding: 0 }}
             type="button"
-            onClick={goNextWeek}
+            onClick={() => updateWeek(7)}
           >
             <i className="fa-solid fa-chevron-right"></i>
           </button>
@@ -356,119 +135,7 @@ const DoctorWeeklySchedule = ({
         </div>
       ) : null}
 
-      <div className="weekly-schedule-wrapper mt-3">
-        <div className="timetable-grid">
-          <div className="time-col-header"></div>
-
-          {weekDays.map((date) => {
-            const sunday = date.getDay() === 0;
-            const current = isToday(date);
-
-            return (
-              <div
-                key={`header-${date.toISOString()}`}
-                className={`day-header text-center ${current ? "current-day" : ""}`}
-              >
-                <div
-                  className={`day-name ${
-                    sunday ? "text-danger" : current ? "text-primary" : ""
-                  }`}
-                >
-                  {getDayName(date)}
-                </div>
-                <div
-                  className={`day-date ${
-                    sunday ? "text-danger" : current ? "text-primary" : ""
-                  }`}
-                >
-                  {getDayDate(date)}
-                </div>
-              </div>
-            );
-          })}
-
-          <div className="shift-row-label bg-light-success text-success border-bottom">
-            <i className="fa-regular fa-sun mb-1 fs-5"></i>
-            <span>Ca sáng</span>
-          </div>
-
-          {weekDays.map((date) => {
-            const active = hasShiftOnDate(shifts, date, "morning");
-
-            return (
-              <div
-                key={`morning-${date.toISOString()}`}
-                className="timetable-cell border-bottom d-flex align-items-center justify-content-center"
-                style={
-                  date.getDay() === 0
-                    ? { backgroundColor: "#fdf2f2" }
-                    : undefined
-                }
-              >
-                {active ? (
-                  <span className="badge bg-success-subtle text-success">
-                    {SHIFT_TIME_LABELS.morning}
-                  </span>
-                ) : null}
-              </div>
-            );
-          })}
-
-          <div className="shift-row-label bg-light-warning text-warning-dark">
-            <i className="fa-solid fa-cloud-sun mb-1 fs-5"></i>
-            <span>Ca chiều</span>
-          </div>
-
-          {weekDays.map((date) => {
-            const active = hasShiftOnDate(shifts, date, "afternoon");
-
-            return (
-              <div
-                key={`afternoon-${date.toISOString()}`}
-                className="timetable-cell d-flex align-items-center justify-content-center"
-                style={
-                  date.getDay() === 0
-                    ? { backgroundColor: "#fdf2f2" }
-                    : undefined
-                }
-              >
-                {active ? (
-                  <span className="badge bg-warning-subtle text-warning-emphasis">
-                    {SHIFT_TIME_LABELS.afternoon}
-                  </span>
-                ) : null}
-              </div>
-            );
-          })}
-
-          <div className="shift-row-label bg-light-primary text-primary border-top">
-            <i className="fa-regular fa-moon mb-1 fs-5"></i>
-            <span>Ca tối</span>
-          </div>
-
-          {weekDays.map((date) => {
-            const active = hasShiftOnDate(shifts, date, "evening");
-
-            return (
-              <div
-                key={`evening-${date.toISOString()}`}
-                className="timetable-cell border-top d-flex align-items-center justify-content-center"
-                style={
-                  date.getDay() === 0
-                    ? { backgroundColor: "#fdf2f2" }
-                    : undefined
-                }
-              >
-                {active ? (
-                  <span className="badge bg-primary-subtle text-primary">
-                    {SHIFT_TIME_LABELS.evening}
-                  </span>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <WeeklyScheduleGrid weekDays={weekDays} shifts={shifts} isToday={isToday} />
 
       <div className="text-muted mt-3" style={{ fontSize: "0.9rem" }}>
         {loading
@@ -476,7 +143,7 @@ const DoctorWeeklySchedule = ({
           : errorText
             ? errorText
             : shifts.length > 0
-              ? `Đã tải thành công.`
+              ? "Đã tải thành công."
               : hasAnyDoctorShift === false
                 ? "Bác sĩ này chưa được gán ca trực nào trong hệ thống."
                 : "Bác sĩ chưa có lịch trực trong tuần đang xem."}

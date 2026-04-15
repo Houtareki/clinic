@@ -1,22 +1,15 @@
-import { getStaffAvatar } from "./staffUtils";
+import { getPatientAvatar, getPatientMeta } from "../patientUtils";
 
-function StaffCard({
-  staff,
-  roleUI,
-  canManageStaff,
+function PatientCard({
+  patient,
+  canManagePatients,
   isDropdownOpen,
   onToggleDropdown,
   onOpenDetail,
   onEdit,
   onDelete,
 }) {
-  const role = staff.role || "DOCTOR";
-  const canOpenStaffDetail = Boolean(staff.id);
-  const fallbackAvatar = getStaffAvatar(staff, roleUI);
-  const avatarSrc =
-    staff.avatarUrl && staff.avatarUrl.trim() !== ""
-      ? staff.avatarUrl
-      : fallbackAvatar;
+  const fallbackAvatar = getPatientAvatar(patient);
 
   return (
     <div className="col">
@@ -24,16 +17,13 @@ function StaffCard({
         className={`doctor-card staff-card position-relative h-100 ${
           isDropdownOpen ? "staff-card-dropdown-open" : ""
         }`}
-        onClick={() => {
-          if (!canOpenStaffDetail) return;
-          onOpenDetail();
-        }}
-        style={{ cursor: canOpenStaffDetail ? "pointer" : "default" }}
+        onClick={onOpenDetail}
+        style={{ cursor: "pointer" }}
       >
-        {canManageStaff && (
+        {canManagePatients && (
           <div
             className="dropdown position-absolute top-0 end-0 mt-3 me-3"
-            data-staff-dropdown-root
+            data-patient-dropdown-root
             style={{ zIndex: 30 }}
             onClick={(event) => event.stopPropagation()}
           >
@@ -77,9 +67,9 @@ function StaffCard({
         <div className="d-flex gap-3 text-decoration-none text-dark align-items-start staff-card-body">
           <div className="staff-avatar-box shadow-sm">
             <img
-              src={avatarSrc}
+              src={fallbackAvatar}
               className="staff-avatar"
-              alt={staff.fullName}
+              alt={patient.fullName}
               onError={(event) => {
                 event.currentTarget.onerror = null;
                 event.currentTarget.src = fallbackAvatar;
@@ -88,27 +78,24 @@ function StaffCard({
           </div>
 
           <div className="doctor-info staff-card-info flex-grow-1">
-            <span
-              className={`badge staff-role-badge bg-${roleUI.bg} bg-opacity-10 text-${roleUI.bg} mb-2 border border-${roleUI.bg} border-opacity-25`}
-            >
-              {roleUI.name}
+            <span className="badge staff-role-badge bg-success bg-opacity-10 text-success mb-2 border border-success border-opacity-25">
+              Bệnh nhân
             </span>
 
-            <h5 className="staff-card-name">{staff.fullName}</h5>
+            <h5 className="staff-card-name">{patient.fullName}</h5>
 
-            {role === "DOCTOR" && (
-              <div className="text-muted mb-1 staff-card-specialty">
-                {staff.specialty || "Khoa chung"}
-              </div>
-            )}
-
-            <div className="text-muted staff-card-contact">
-              <i className="fa-solid fa-envelope me-2"></i>
-              {staff.email || "Chưa cập nhật"}
+            <div className="text-muted mb-1 staff-card-specialty">
+              {getPatientMeta(patient)}
             </div>
+
             <div className="text-muted staff-card-contact">
               <i className="fa-solid fa-phone me-2"></i>
-              {staff.phone || "Chưa cập nhật"}
+              {patient.phone || "Chưa cập nhật"}
+            </div>
+
+            <div className="text-muted staff-card-contact">
+              <i className="fa-solid fa-location-dot me-2"></i>
+              {patient.address || "Chưa cập nhật"}
             </div>
           </div>
         </div>
@@ -117,4 +104,4 @@ function StaffCard({
   );
 }
 
-export default StaffCard;
+export default PatientCard;
