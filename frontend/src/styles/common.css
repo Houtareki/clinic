@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600,700");
+
+body {
+  margin: 0;
+  font-family: "Raleway", sans-serif;
+  background-color: #f5f8fa;
+  color: #212529;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  color: #1a3c22 !important;
+}
+
+.btn-primary-custom {
+  background-color: #264b33;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 8px 20px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary-custom:hover,
+.btn-primary-custom:focus {
+  background-color: #1a3c22;
+  color: #fff;
+}
+
+.btn-primary-custom:disabled {
+  opacity: 0.7;
+}
+
+.doctor-card {
+  border: 1px solid #eaedf1;
+  border-radius: 12px;
+  background-color: #fff;
+  padding: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doctor-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transform: translateY(-3px);
+}
+
+.dropdown-toggle-no-caret::after {
+  display: none !important;
+}
+
+.action-btn {
+  color: #a0a5ba;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+}
+
+.action-btn:hover {
+  color: #64748b;
+}
+
+.detail-card {
+  background-color: #fff;
+  border: 1px solid #eaedf1;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.back-link {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.back-link:hover {
+  color: #264b33 !important;
+  transform: translateX(-5px);
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #eaf7ed;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}

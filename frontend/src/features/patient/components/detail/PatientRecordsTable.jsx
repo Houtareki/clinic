@@ -1,4 +1,4 @@
-import { getStatusClassName, splitDateTime } from "../../patientDetailUtils";
+import { getStatusClassName, splitDateTime } from "../../utils/patientDetailUtils";
 
 function PatientRecordsTable({
   records,

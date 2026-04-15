@@ -7,17 +7,15 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import LoginPage from "./features/auth/LoginPage";
-import DashboardView from "./features/dashboard/DashboardView";
-import StaffView from "./features/staff/StaffView";
-import DoctorDetailView from "./features/staff/DoctorDetailView";
-import PatientView from "./features/patient/PatientView";
-import ProfileView from "./features/profile/ProfileView";
-import PatientDetailView from "./features/patient/PatientDetailView";
-import ShiftView from "./features/shift/ShiftView";
-import "./assets/css/index.css";
-import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import DashboardView from "./features/dashboard/views/DashboardView";
+import StaffView from "./features/staff/views/StaffView";
+import DoctorDetailView from "./features/staff/views/DoctorDetailView";
+import PatientView from "./features/patient/views/PatientView";
+import ProfileView from "./features/profile/views/ProfileView";
+import PatientDetailView from "./features/patient/views/PatientDetailView";
+import ShiftView from "./features/shift/views/ShiftView";
+import "./styles/common.css";
+import "./styles/public.css";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();

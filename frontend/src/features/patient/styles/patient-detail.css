@@ -1,0 +1,42 @@
+.status-badge {
+  display: inline-flex;
+  white-space: nowrap;
+  text-align: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.table-custom th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 2px solid #eaedf1;
+  padding: 12px;
+}
+
+.table-custom td {
+  padding: 16px 12px;
+  vertical-align: middle;
+  color: #334155;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eaedf1;
+}
+
+.status-completed {
+  background-color: #eaf7ed;
+  color: #198754;
+}
+
+.status-cancelled {
+  background-color: #fdf2f2;
+  color: #dc3545;
+}
+
+.status-pending {
+  background-color: #fffbeb;
+  color: #f59e0b;
+}

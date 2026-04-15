@@ -1,4 +1,4 @@
-import { getPatientDetailAvatar } from "../../patientDetailUtils";
+import { getPatientDetailAvatar } from "../../utils/patientDetailUtils";
 
 function PatientDetailHeader({
   patient,
