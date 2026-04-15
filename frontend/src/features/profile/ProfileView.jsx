@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { useAuth } from "../../context/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
+import "../../assets/css/profile.css";
 
 const API_BASE = "http://localhost:8080/api/profile";
+const ADMIN_API_BASE = "http://localhost:8080/api/admin";
 
 const PROFILE_INFO = {
   id: "",
@@ -29,18 +31,18 @@ const PASSWORD_FORM = {
 const getRoleLabel = (role) => {
   switch (role) {
     case "ADMIN":
-      return "System Administrator";
+      return "Quản trị viên";
     case "DOCTOR":
-      return "Doctor";
+      return "Bác sĩ";
     case "RECEPTIONIST":
-      return "Receptionist";
+      return "Lễ tân";
     default:
-      return role || "User";
+      return role || "Người dùng";
   }
 };
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return;
+  if (!dateStr) return "";
 
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return dateStr;
@@ -60,20 +62,28 @@ const getStoredUser = () => {
   }
 };
 
+const normalizeProfileData = (data, fallback = PROFILE_INFO) => ({
+  ...PROFILE_INFO,
+  ...fallback,
+  ...data,
+  active:
+    data?.active ?? data?.isActive ?? fallback.active ?? PROFILE_INFO.active,
+});
+
 const ProfileView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const { user } = useAuth();
   const filterInput = useRef(null);
 
   const [profile, setProfile] = useState(PROFILE_INFO);
   const [initialProfile, setInitialProfile] = useState(PROFILE_INFO);
   const [passwordForm, setPasswordForm] = useState(PASSWORD_FORM);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [locking, setLocking] = useState(false);
+  const [showLockModal, setShowLockModal] = useState(false);
 
   const currentUserId = useMemo(() => {
     const storedUser = getStoredUser();
@@ -93,9 +103,12 @@ const ProfileView = () => {
   }, [id, currentUserId]);
 
   const isViewingOwnProfile = Number(targetUserId) === Number(currentUserId);
-  const canChangePassword = isViewingOwnProfile;
-
   const isDoctor = profile.role === "DOCTOR";
+  const isAdminViewer = user?.role === "ADMIN";
+  const isManagedEmployeeProfile =
+    isAdminViewer && !isViewingOwnProfile && !isDoctor;
+  const canChangePassword = isViewingOwnProfile || isManagedEmployeeProfile;
+  const canLockAccount = isManagedEmployeeProfile;
   const roleLabel = getRoleLabel(profile.role);
 
   const fetchProfile = async () => {
@@ -108,15 +121,11 @@ const ProfileView = () => {
         },
       });
 
-      const normalized = {
-        ...PROFILE_INFO,
-        ...response.data,
-      };
-
+      const normalized = normalizeProfileData(response.data);
       setProfile(normalized);
       setInitialProfile(normalized);
     } catch (error) {
-      alert(error.message || "Không tải được hồ sơ cá nhân");
+      alert(error.response?.data || error.message || "Không tải được hồ sơ");
     } finally {
       setLoading(false);
     }
@@ -127,16 +136,16 @@ const ProfileView = () => {
     fetchProfile();
   }, [targetUserId]);
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
+  const handleProfileChange = (event) => {
+    const { name, value } = event.target;
     setProfile((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
+  const handlePasswordChange = (event) => {
+    const { name, value } = event.target;
     setPasswordForm((prev) => ({
       ...prev,
       [name]: value,
@@ -148,7 +157,51 @@ const ProfileView = () => {
     setPasswordForm(PASSWORD_FORM);
   };
 
-  const updateProfile = async () => {
+  const getPasswordAction = () => {
+    const hasPasswordInput =
+      passwordForm.currentPassword ||
+      passwordForm.newPassword ||
+      passwordForm.confirmPassword;
+
+    if (!canChangePassword || !hasPasswordInput) {
+      return null;
+    }
+
+    if (isViewingOwnProfile) {
+      if (
+        !passwordForm.currentPassword ||
+        !passwordForm.newPassword ||
+        !passwordForm.confirmPassword
+      ) {
+        throw new Error("Vui lòng nhập đầy đủ thông tin đổi mật khẩu");
+      }
+
+      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        throw new Error("Xác nhận mật khẩu mới không khớp");
+      }
+
+      return {
+        mode: "SELF",
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      };
+    }
+
+    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
+      throw new Error("Vui lòng nhập mật khẩu mới và xác nhận mật khẩu mới");
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      throw new Error("Xác nhận mật khẩu mới không khớp");
+    }
+
+    return {
+      mode: "ADMIN_RESET",
+      newPassword: passwordForm.newPassword,
+    };
+  };
+
+  const updateProfile = async (passwordAction) => {
     const payload = {
       fullName: profile.fullName,
       phone: profile.phone,
@@ -161,48 +214,32 @@ const ProfileView = () => {
             bio: profile.bio,
           }
         : {}),
+      ...(passwordAction?.mode === "ADMIN_RESET"
+        ? { password: passwordAction.newPassword }
+        : {}),
     };
 
-    const response = await axios.put(`${API_BASE}/profile`, payload, {
-      headers: {
-        "X-User-Id": targetUserId,
-      },
-    });
+    const response = isManagedEmployeeProfile
+      ? await axios.put(`${ADMIN_API_BASE}/employees/${targetUserId}`, payload)
+      : await axios.put(`${API_BASE}/profile`, payload, {
+          headers: {
+            "X-User-Id": targetUserId,
+          },
+        });
 
-    const normalized = {
-      ...PROFILE_INFO,
-      ...response.data,
-      degree: response.data?.degree ?? profile.degree,
-    };
-
+    const normalized = normalizeProfileData(response.data, profile);
     setProfile(normalized);
     setInitialProfile(normalized);
   };
 
-  const updatePassword = async () => {
-    const hasPasswordInput =
-      passwordForm.currentPassword ||
-      passwordForm.newPassword ||
-      passwordForm.confirmPassword;
-
-    if (!hasPasswordInput) return;
-
-    if (
-      !passwordForm.currentPassword ||
-      !passwordForm.newPassword ||
-      !passwordForm.confirmPassword
-    ) {
-      throw new Error("Vui lòng nhập đầy đủ thông tin đổi mật khẩu");
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      throw new Error("Xác nhận mật khẩu mới không khớp");
-    }
+  const updatePassword = async (passwordAction) => {
+    if (!passwordAction || passwordAction.mode !== "SELF") return;
 
     await axios.put(
       `${API_BASE}/change-password`,
       {
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword,
+        currentPassword: passwordAction.currentPassword,
+        newPassword: passwordAction.newPassword,
       },
       {
         headers: {
@@ -210,8 +247,6 @@ const ProfileView = () => {
         },
       },
     );
-
-    setPasswordForm(PASSWORD_FORM);
   };
 
   const handleSubmit = async (event) => {
@@ -220,8 +255,10 @@ const ProfileView = () => {
     try {
       setSaving(true);
 
-      await updateProfile();
-      await updatePassword();
+      const passwordAction = getPasswordAction();
+      await updateProfile(passwordAction);
+      await updatePassword(passwordAction);
+      setPasswordForm(PASSWORD_FORM);
 
       alert("Cập nhật hồ sơ thành công!");
     } catch (error) {
@@ -276,12 +313,31 @@ const ProfileView = () => {
     }
   };
 
+  const handleLockAccount = async () => {
+    if (!canLockAccount || !profile.active) return;
+
+    try {
+      setLocking(true);
+      await axios.delete(`${ADMIN_API_BASE}/employees/${targetUserId}`);
+      setShowLockModal(false);
+      setProfile((prev) => ({ ...prev, active: false }));
+      setInitialProfile((prev) => ({ ...prev, active: false }));
+      alert("Khóa tài khoản thành công!");
+      navigate(-1);
+    } catch (error) {
+      console.error("Lỗi khi khóa tài khoản:", error);
+      alert(error.response?.data || "Không thể khóa tài khoản!");
+    } finally {
+      setLocking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container-fluid p-4">
         <div className="detail-card p-4 text-center">
           <div className="spinner-border text-primary mb-3" role="status"></div>
-          <p className="mb-0">Đang tải hồ sơ cá nhân...</p>
+          <p className="mb-0">Đang tải hồ sơ...</p>
         </div>
       </div>
     );
@@ -317,7 +373,7 @@ const ProfileView = () => {
 
       <div className="row g-4">
         <div className="col-lg-4">
-          <div className="detail-card p-4 text-center h-100">
+          <div className="detail-card p-4 text-center h-100 d-flex flex-column">
             <div className="mb-4 position-relative d-inline-block">
               <img
                 src={avatarSrc}
@@ -345,29 +401,43 @@ const ProfileView = () => {
               </p>
             )}
 
-            <div className="upload-btn-wrapper w-100 mb-3">
-              <button
-                className="btn btn-light border fw-medium w-100"
-                type="button"
-                onClick={() => filterInput.current?.click()}
-                disabled={uploadingAvatar}
-              >
-                <i className="fa-solid fa-camera me-2"></i>
-                {uploadingAvatar ? "Đang tải ảnh..." : "Đổi ảnh đại diện"}
-              </button>
+            <div className="mt-auto pt-4">
+              <div className="upload-btn-wrapper w-100 mb-3">
+                <button
+                  className="btn btn-light border fw-medium w-100"
+                  type="button"
+                  onClick={() => filterInput.current?.click()}
+                  disabled={uploadingAvatar}
+                >
+                  <i className="fa-solid fa-camera me-2"></i>
+                  {uploadingAvatar ? "Đang tải ảnh..." : "Đổi ảnh đại diện"}
+                </button>
 
-              <input
-                ref={filterInput}
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleAvatarUpload}
-              />
+                <input
+                  ref={filterInput}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={handleAvatarUpload}
+                />
+              </div>
+
+              {canLockAccount && (
+                <button
+                  className="btn btn-outline-danger w-100 fw-bold rounded-pill mb-3"
+                  type="button"
+                  onClick={() => setShowLockModal(true)}
+                  disabled={locking || !profile.active}
+                >
+                  <i className="fa-solid fa-lock me-2"></i>
+                  {profile.active ? "Khóa tài khoản" : "Tài khoản đã khóa"}
+                </button>
+              )}
+
+              <p className="text-muted fs-7 mb-0">
+                Cho phép định dạng JPG, GIF hoặc PNG. Kích thước tối đa 2MB.
+              </p>
             </div>
-
-            <p className="text-muted fs-7 mb-0">
-              Cho phép định dạng JPG, GIF hoặc PNG. Kích thước tối đa 2MB.
-            </p>
           </div>
         </div>
 
@@ -399,10 +469,10 @@ const ProfileView = () => {
                   </label>
                   <input
                     type="text"
-                    className="form-control bg-light"
+                    className="form-control profile-readonly-field"
                     value={profile.username || ""}
                     readOnly
-                    disabled
+                    aria-readonly="true"
                     title="Không thể đổi tên đăng nhập"
                   />
                 </div>
@@ -491,27 +561,37 @@ const ProfileView = () => {
                   </div>
                 </>
               )}
+
               {canChangePassword && (
                 <>
-                  <div className="form-section-title">
-                    <i className="fa-solid fa-shield-halved me-2"></i>
-                    Bảo mật tài khoản
+                  <div className="form-section-title d-flex justify-content-between align-items-center">
+                    <div>
+                      <i className="fa-solid fa-shield-halved me-2"></i>
+                      Bảo mật tài khoản
+                    </div>
+                    {isManagedEmployeeProfile && (
+                      <span className="badge bg-danger-subtle text-danger border border-danger-subtle">
+                        Đặt mật khẩu mới
+                      </span>
+                    )}
                   </div>
 
                   <div className="row g-4 mb-4">
-                    <div className="col-12">
-                      <label className="form-label fw-medium text-muted">
-                        Mật khẩu hiện tại
-                      </label>
-                      <input
-                        type="password"
-                        className="form-control bg-light"
-                        name="currentPassword"
-                        value={passwordForm.currentPassword}
-                        onChange={handlePasswordChange}
-                        placeholder="••••••••"
-                      />
-                    </div>
+                    {isViewingOwnProfile ? (
+                      <div className="col-12">
+                        <label className="form-label fw-medium text-muted">
+                          Mật khẩu hiện tại
+                        </label>
+                        <input
+                          type="password"
+                          className="form-control bg-light"
+                          name="currentPassword"
+                          value={passwordForm.currentPassword}
+                          onChange={handlePasswordChange}
+                          placeholder="••••••••"
+                        />
+                      </div>
+                    ) : null}
 
                     <div className="col-md-6">
                       <label className="form-label fw-medium text-muted">
@@ -569,6 +649,53 @@ const ProfileView = () => {
           </div>
         </div>
       </div>
+
+      {canLockAccount && showLockModal && (
+        <div
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-sm modal-dialog-centered">
+            <div
+              className="modal-content border-0 shadow-lg"
+              style={{ borderRadius: "16px" }}
+            >
+              <div className="modal-body p-4 text-center">
+                <div className="text-danger mb-3">
+                  <i
+                    className="fa-solid fa-circle-exclamation"
+                    style={{ fontSize: "4rem" }}
+                  ></i>
+                </div>
+
+                <h5 className="fw-bold mb-2 text-dark">Xác nhận khóa?</h5>
+                <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
+                  Bạn có chắc chắn muốn khóa tài khoản này khỏi hệ thống?
+                </p>
+
+                <div className="d-flex justify-content-center gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-light border px-4"
+                    onClick={() => setShowLockModal(false)}
+                    disabled={locking}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger px-4 shadow-sm"
+                    onClick={handleLockAccount}
+                    disabled={locking}
+                  >
+                    {locking ? "Đang xử lý..." : "Xác nhận"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

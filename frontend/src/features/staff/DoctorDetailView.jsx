@@ -94,6 +94,7 @@ const buildDoctorRecord = (doctorId, sources) => {
     degree: pickFirstValue(availableSources, ["degree"]),
     bio: pickFirstValue(availableSources, ["bio", "description"]),
     createdAt: pickFirstValue(availableSources, DATE_FIELD_CANDIDATES, null),
+    active: pickFirstValue(availableSources, ["active", "isActive"], true),
   };
 };
 
@@ -276,15 +277,25 @@ const DoctorDetailView = () => {
   };
 
   const handleLockAccount = async () => {
-    if (!canManageDoctor) return;
+    if (!canManageDoctor || !doctor?.active) return;
 
     setLocking(true);
 
     try {
       await axios.delete(`${ADMIN_API_BASE}/employees/${id}`);
       setShowDeleteModal(false);
+
+      setDoctor((prev) =>
+        prev
+          ? {
+              ...prev,
+              active: false,
+              isActive: false,
+            }
+          : prev,
+      );
+
       alert("Khóa tài khoản thành công!");
-      navigate(-1);
     } catch (error) {
       console.error("Lỗi khi khóa tài khoản:", error);
       alert(error.response?.data || "Không thể khóa tài khoản.");
@@ -520,9 +531,15 @@ const DoctorDetailView = () => {
                   <button
                     className="btn btn-outline-danger w-100 fw-bold rounded-pill"
                     type="button"
-                    onClick={() => setShowDeleteModal(true)}
+                    onClick={() => {
+                      if (doctor?.active) {
+                        setShowDeleteModal(true);
+                      }
+                    }}
+                    disabled={locking || !doctor?.active}
                   >
-                    <i className="fa-solid fa-lock me-2"></i> Khóa tài khoản
+                    <i className="fa-solid fa-lock me-2"></i>
+                    {doctor?.active ? "Khóa tài khoản" : "Tài khoản đã khóa"}
                   </button>
                 </>
               )}
@@ -745,7 +762,7 @@ const DoctorDetailView = () => {
         </div>
       )}
 
-      {canManageDoctor && showDeleteModal && (
+      {canManageDoctor && doctor?.active && showDeleteModal && (
         <div
           className="modal fade show d-block"
           tabIndex="-1"
