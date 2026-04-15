@@ -478,12 +478,15 @@ const PatientDetailView = () => {
           </div>
 
           <div className="col-lg-8">
-            <div className="detail-card mb-4 p-0 overflow-hidden">
+            <div className="detail-card mb-4 p-0">
               <div className="p-4 border-bottom d-flex justify-content-between align-items-center bg-light">
                 <h5 className="fw-bold text-dark mb-0">Lịch sử khám bệnh</h5>
               </div>
 
-              <div className="p-0 table-responsive">
+              <div
+                className="p-0 table-responsive"
+                style={{ overflow: "visible" }}
+              >
                 <table className="table table-custom table-hover mb-0">
                   <thead>
                     <tr>

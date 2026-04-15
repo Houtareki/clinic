@@ -5,7 +5,6 @@ import "../../assets/css/staff-view.css";
 import { useAuth } from "../../context/useAuth";
 
 const RECEPTIONIST_API_BASE = "http://localhost:8080/api/receptionist";
-const DOCTOR_API_BASE = "http://localhost:8080/api/doctor";
 
 const PatientView = () => {
   const navigate = useNavigate();
@@ -16,8 +15,7 @@ const PatientView = () => {
   const canViewPatients = isReceptionist || isDoctor;
   const canManagePatients = isReceptionist;
 
-  const API_BASE = isDoctor ? DOCTOR_API_BASE : RECEPTIONIST_API_BASE;
-
+  const API_BASE = RECEPTIONIST_API_BASE;
   const [patientList, setPatientList] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
