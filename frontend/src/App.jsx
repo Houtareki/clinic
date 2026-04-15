@@ -82,6 +82,7 @@ function App() {
             }
           />
           <Route path="profile" element={<ProfileView />} />
+          <Route path="profile/:id" element={<ProfileView />} />
         </Route>
       </Routes>
     </BrowserRouter>

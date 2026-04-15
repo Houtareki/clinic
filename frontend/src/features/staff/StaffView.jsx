@@ -419,7 +419,7 @@ const StaffView = () => {
         {filteredStaffList.map((staff) => {
           const role = staff.role || "DOCTOR";
           const roleUI = getRoleUI(role);
-          const canOpenDoctorDetail = role === "DOCTOR";
+          const canOpenStaffDetail = Boolean(staff.id);
           const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
             staff.fullName || "Nhan vien",
           )}&background=${roleUI.hex}&color=${roleUI.color}&size=120`;
@@ -436,11 +436,16 @@ const StaffView = () => {
                   openDropdownId === staff.id ? "staff-card-dropdown-open" : ""
                 }`}
                 onClick={() => {
-                  if (canOpenDoctorDetail) {
+                  if (!canOpenStaffDetail) return;
+
+                  if (role === "DOCTOR") {
                     navigate(`/dashboard/doctors/${staff.id}`);
+                    return;
                   }
+
+                  navigate(`/dashboard/profile/${staff.id}`);
                 }}
-                style={{ cursor: canOpenDoctorDetail ? "pointer" : "default" }}
+                style={{ cursor: canOpenStaffDetail ? "pointer" : "default" }}
               >
                 {canManageStaff && (
                   <div

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/useAuth";
+import { useParams, useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8080/api/profile";
 
@@ -60,6 +61,9 @@ const getStoredUser = () => {
 };
 
 const ProfileView = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const { user } = useAuth();
   const filterInput = useRef(null);
 
@@ -71,7 +75,7 @@ const ProfileView = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const userId = useMemo(() => {
+  const currentUserId = useMemo(() => {
     const storedUser = getStoredUser();
 
     return (
@@ -83,6 +87,14 @@ const ProfileView = () => {
     );
   }, [user]);
 
+  const targetUserId = useMemo(() => {
+    if (id) return Number(id);
+    return currentUserId;
+  }, [id, currentUserId]);
+
+  const isViewingOwnProfile = Number(targetUserId) === Number(currentUserId);
+  const canChangePassword = isViewingOwnProfile;
+
   const isDoctor = profile.role === "DOCTOR";
   const roleLabel = getRoleLabel(profile.role);
 
@@ -92,7 +104,7 @@ const ProfileView = () => {
 
       const response = await axios.get(`${API_BASE}/me`, {
         headers: {
-          "X-User-Id": userId,
+          "X-User-Id": targetUserId,
         },
       });
 
@@ -111,9 +123,9 @@ const ProfileView = () => {
   };
 
   useEffect(() => {
-    if (!userId) return;
+    if (!targetUserId) return;
     fetchProfile();
-  }, [userId]);
+  }, [targetUserId]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -153,7 +165,7 @@ const ProfileView = () => {
 
     const response = await axios.put(`${API_BASE}/profile`, payload, {
       headers: {
-        "X-User-Id": userId,
+        "X-User-Id": targetUserId,
       },
     });
 
@@ -194,7 +206,7 @@ const ProfileView = () => {
       },
       {
         headers: {
-          "X-User-Id": userId,
+          "X-User-Id": targetUserId,
         },
       },
     );
@@ -221,7 +233,7 @@ const ProfileView = () => {
   };
 
   const handleAvatarUpload = async (event) => {
-    const file = event.target.file?.[0];
+    const file = event.target.files?.[0];
 
     if (!file) return;
 
@@ -233,7 +245,7 @@ const ProfileView = () => {
 
       const response = await axios.post(`${API_BASE}/upload-avatar`, formData, {
         headers: {
-          "X-User-Id": userId,
+          "X-User-Id": targetUserId,
           "Content-Type": "multipart/form-data",
         },
       });
@@ -286,7 +298,22 @@ const ProfileView = () => {
 
   return (
     <div className="container-fluid p-4">
-      <h3 className="fw-bold mb-4">Thiết lập Tài khoản</h3>
+      {!isViewingOwnProfile && (
+        <a
+          href="#"
+          className="text-decoration-none text-muted mb-4 d-inline-block fw-bold"
+          onClick={(event) => {
+            event.preventDefault();
+            navigate(-1);
+          }}
+        >
+          <i className="fa-solid fa-arrow-left me-2"></i> Quay lại
+        </a>
+      )}
+
+      <h3 className="fw-bold mb-4">
+        {isViewingOwnProfile ? "Thiết lập Tài khoản" : "Hồ sơ nhân viên"}
+      </h3>
 
       <div className="row g-4">
         <div className="col-lg-4">
@@ -464,55 +491,58 @@ const ProfileView = () => {
                   </div>
                 </>
               )}
+              {canChangePassword && (
+                <>
+                  <div className="form-section-title">
+                    <i className="fa-solid fa-shield-halved me-2"></i>
+                    Bảo mật tài khoản
+                  </div>
 
-              <div className="form-section-title">
-                <i className="fa-solid fa-shield-halved me-2"></i>
-                Bảo mật tài khoản
-              </div>
+                  <div className="row g-4 mb-4">
+                    <div className="col-12">
+                      <label className="form-label fw-medium text-muted">
+                        Mật khẩu hiện tại
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control bg-light"
+                        name="currentPassword"
+                        value={passwordForm.currentPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="••••••••"
+                      />
+                    </div>
 
-              <div className="row g-4 mb-4">
-                <div className="col-12">
-                  <label className="form-label fw-medium text-muted">
-                    Mật khẩu hiện tại
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control bg-light"
-                    name="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="••••••••"
-                  />
-                </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium text-muted">
+                        Mật khẩu mới
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control bg-light"
+                        name="newPassword"
+                        value={passwordForm.newPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="Nhập mật khẩu mới"
+                      />
+                    </div>
 
-                <div className="col-md-6">
-                  <label className="form-label fw-medium text-muted">
-                    Mật khẩu mới
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control bg-light"
-                    name="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="Nhập mật khẩu mới"
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label fw-medium text-muted">
-                    Xác nhận mật khẩu mới
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control bg-light"
-                    name="confirmPassword"
-                    value={passwordForm.confirmPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="Nhập lại mật khẩu mới"
-                  />
-                </div>
-              </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-medium text-muted">
+                        Xác nhận mật khẩu mới
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control bg-light"
+                        name="confirmPassword"
+                        value={passwordForm.confirmPassword}
+                        onChange={handlePasswordChange}
+                        placeholder="Nhập lại mật khẩu mới"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <hr className="text-muted opacity-25 mt-5 mb-4" />
 
