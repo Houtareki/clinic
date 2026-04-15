@@ -13,6 +13,7 @@ import DoctorDetailView from "./features/staff/DoctorDetailView";
 import PatientView from "./features/patient/PatientView";
 import ProfileView from "./features/profile/ProfileView";
 import PatientDetailView from "./features/patient/PatientDetailView";
+import ShiftView from "./features/shift/ShiftView";
 import "./assets/css/index.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -89,6 +90,14 @@ function App() {
             element={
               <RoleRoute roles={["RECEPTIONIST", "DOCTOR"]}>
                 <PatientDetailView />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="shift"
+            element={
+              <RoleRoute roles={["RECEPTIONIST", "DOCTOR"]}>
+                <ShiftView />
               </RoleRoute>
             }
           />

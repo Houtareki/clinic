@@ -2,15 +2,15 @@ export const ADMIN_API_BASE = "http://localhost:8080/api/admin";
 export const RECEPTIONIST_API_BASE = "http://localhost:8080/api/receptionist";
 
 export const SPECIALTY_OPTIONS = [
-  "Khoa noi",
-  "Khoa ngoai",
+  "Khoa nội",
+  "Khoa ngoại",
   "Khoa nhi",
-  "Khoa tim mach",
-  "Khoa da lieu",
-  "Khoa tai mui hong",
-  "Khoa than kinh",
-  "Khoa san",
-  "Khoa mat",
+  "Khoa tim mạch",
+  "Khoa da liễu",
+  "Khoa tai mũi họng",
+  "Khoa thần kinh",
+  "Khoa sản",
+  "Khoa mắt",
 ];
 
 const DATE_FIELD_CANDIDATES = [
@@ -71,7 +71,11 @@ export const buildDoctorRecord = (doctorId, sources) => {
 
   return {
     ...firstSource,
-    id: pickFirstValue(availableSources, ["id", "doctorId", "accountId"], doctorId),
+    id: pickFirstValue(
+      availableSources,
+      ["id", "doctorId", "accountId"],
+      doctorId,
+    ),
     role: "DOCTOR",
     fullName: pickFirstValue(availableSources, ["fullName", "name"]),
     phone: pickFirstValue(availableSources, ["phone", "phoneNumber"]),

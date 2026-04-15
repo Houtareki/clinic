@@ -66,7 +66,14 @@ public class ShiftController {
 
         try {
             Shift shift = shiftService.findById(id);
-            return ResponseEntity.ok(ShiftMapper.toShiftResponse(shift, role, userId));
+            ShiftResponseDTO dto = ShiftMapper.toShiftResponse(shift, role, userId);
+
+            if (role == Account.Role.DOCTOR && (dto.getRooms() == null || dto.getRooms().isEmpty())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Bạn không có quyền xem ca trực này");
+            }
+
+            return ResponseEntity.ok(dto);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy ca trực");
         }

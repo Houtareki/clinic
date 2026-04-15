@@ -58,7 +58,7 @@ function Sidebar({ menus }) {
   return (
     <aside
       className="bg-white shadow-sm d-flex flex-column"
-      style={{ width: "240px", minHeight: "100vh" }}
+      style={{ width: "280px", minHeight: "100vh" }}
     >
       <div className="p-3 border-bottom">
         <span className="text-success fw-bold fs-5">
