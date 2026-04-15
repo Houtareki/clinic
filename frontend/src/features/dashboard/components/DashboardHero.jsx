@@ -8,7 +8,7 @@ function DashboardHero({ title, subtitle, summary, roleLabel, lastUpdated }) {
       </div>
 
       <div className="dashboard-hero-panel">
-        <div className="dashboard-hero-summary-label">Tong ket hom nay</div>
+        <div className="dashboard-hero-summary-label">Tổng kết hôm nay</div>
         <div className="dashboard-hero-summary">{summary}</div>
         <div className="dashboard-hero-updated">{lastUpdated}</div>
       </div>

@@ -30,6 +30,13 @@ export const createAddRecordForm = () => ({
   note: "",
 });
 
+export const createEditAppointmentForm = () => ({
+  recordId: "",
+  doctorId: "",
+  symptoms: "",
+  note: "",
+});
+
 export const createEditRecordForm = () => ({
   recordId: "",
   diagnosis: "",
