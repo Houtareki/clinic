@@ -88,6 +88,16 @@ function DashboardView() {
         title: "Danh sách bác sĩ",
       },
     ];
+  } else if (user?.role === "DOCTOR") {
+    quickLinks = [
+      {
+        to: "/dashboard/patients",
+        icon: "fa-hospital-user",
+        iconColor: "text-success",
+        title: "Danh sách bệnh nhân",
+        description: "Xem hồ sơ bệnh nhân và vào nhanh chi tiết khám bệnh.",
+      },
+    ];
   } else if (user?.role === "ADMIN") {
     quickLinks = [
       {

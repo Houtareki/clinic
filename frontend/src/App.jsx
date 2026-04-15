@@ -77,14 +77,21 @@ function App() {
           <Route
             path="patients"
             element={
-              <RoleRoute roles={["RECEPTIONIST"]}>
+              <RoleRoute roles={["RECEPTIONIST", "DOCTOR"]}>
                 <PatientView />
               </RoleRoute>
             }
           />
           <Route path="profile" element={<ProfileView />} />
           <Route path="profile/:id" element={<ProfileView />} />
-          <Route path="patients/:id" element={<PatientDetailView />} />
+          <Route
+            path="patients/:id"
+            element={
+              <RoleRoute roles={["RECEPTIONIST", "DOCTOR"]}>
+                <PatientDetailView />
+              </RoleRoute>
+            }
+          />
         </Route>
       </Routes>
     </BrowserRouter>

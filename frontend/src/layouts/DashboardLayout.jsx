@@ -9,6 +9,11 @@ const MENU_CONFIG = {
   ],
   DOCTOR: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
+    {
+      path: "/dashboard/patients",
+      label: "Danh sách bệnh nhân",
+      icon: "fa-hospital-user",
+    },
     { path: "/dashboard/shift", label: "Lịch trực", icon: "fa-calendar-days" },
   ],
   RECEPTIONIST: [
