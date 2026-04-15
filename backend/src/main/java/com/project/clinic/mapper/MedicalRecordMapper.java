@@ -26,7 +26,7 @@ public class MedicalRecordMapper {
             dto.setDoctorName(record.getDoctor().getFullName());
         }
 
-        if (record.getStatus() != null) {
+        if (record.getShift() != null) {
             dto.setShiftId(record.getShift().getShiftId());
         }
 

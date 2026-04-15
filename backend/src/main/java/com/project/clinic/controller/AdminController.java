@@ -113,6 +113,19 @@ public class AdminController {
         return ResponseEntity.ok("Xóa thành công");
     }
 
+    @PutMapping("/employees/{id}/unlock")
+    @Transactional
+    public ResponseEntity<?> unlockEmployee(@PathVariable int id) {
+        Account existingAccount = accountService.findById(id);
+        if (existingAccount == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy nhân viên");
+        }
+
+        existingAccount.setActive(true);
+        accountService.save(existingAccount);
+        return ResponseEntity.ok("Mở khóa thành công");
+    }
+
     @GetMapping("/doctors")
     public ResponseEntity<Page<DoctorResponseDTO>> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,
@@ -199,6 +212,4 @@ public class AdminController {
 
         return ResponseEntity.ok(DoctorMapper.toDoctorResponse(existingAccount, existingDoctor));
     }
-
-
 }

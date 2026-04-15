@@ -12,6 +12,7 @@ import StaffView from "./features/staff/StaffView";
 import DoctorDetailView from "./features/staff/DoctorDetailView";
 import PatientView from "./features/patient/PatientView";
 import ProfileView from "./features/profile/ProfileView";
+import PatientDetailView from "./features/patient/PatientDetailView";
 import "./assets/css/index.css";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -83,6 +84,7 @@ function App() {
           />
           <Route path="profile" element={<ProfileView />} />
           <Route path="profile/:id" element={<ProfileView />} />
+          <Route path="patients/:id" element={<PatientDetailView />} />
         </Route>
       </Routes>
     </BrowserRouter>

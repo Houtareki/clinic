@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "../../assets/css/staff-view.css";
 import { useAuth } from "../../context/useAuth";
 
-const API_BASE = "http://localhost:8080/api/receptionist";
+const RECEPTIONIST_API_BASE = "http://localhost:8080/api/receptionist";
+const DOCTOR_API_BASE = "http://localhost:8080/api/doctor";
 
 const PatientView = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
+
   const isReceptionist = user?.role === "RECEPTIONIST";
+  const isDoctor = user?.role === "DOCTOR";
+  const canViewPatients = isReceptionist || isDoctor;
+  const canManagePatients = isReceptionist;
+
+  const API_BASE = isDoctor ? DOCTOR_API_BASE : RECEPTIONIST_API_BASE;
+
   const [patientList, setPatientList] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -29,6 +39,13 @@ const PatientView = () => {
 
   const normalizeDateInput = (value) => {
     if (!value) return "";
+
+    const parts = String(value).split("/");
+    if (parts.length === 3) {
+      const [dd, mm, yyyy] = parts;
+      return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+    }
+
     return String(value).slice(0, 10);
   };
 
@@ -47,7 +64,7 @@ const PatientView = () => {
   };
 
   const fetchPatients = async (searchValue = keyword) => {
-    if (!isReceptionist) {
+    if (!canViewPatients) {
       setPatientList([]);
       return;
     }
@@ -63,7 +80,7 @@ const PatientView = () => {
 
       const patients = patientRes.data?.content || [];
       const activePatients = patients.filter(
-        (patient) => patient.isActive !== false,
+        (patient) => patient.active !== false,
       );
 
       setPatientList(activePatients);
@@ -73,19 +90,19 @@ const PatientView = () => {
   };
 
   useEffect(() => {
-    if (!isReceptionist) return;
+    if (!canViewPatients) return;
     fetchPatients();
-  }, [isReceptionist]);
+  }, [canViewPatients, API_BASE]);
 
   useEffect(() => {
-    if (!isReceptionist) return;
+    if (!canViewPatients) return;
 
     const timer = setTimeout(() => {
       fetchPatients(keyword);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [isReceptionist, keyword]);
+  }, [canViewPatients, keyword, API_BASE]);
 
   useEffect(() => {
     const handleDocumentClick = (event) => {
@@ -107,6 +124,8 @@ const PatientView = () => {
   };
 
   const openAddModal = () => {
+    if (!canManagePatients) return;
+
     setModalMode("ADD");
     setSelectedPatient(null);
     setFormData({
@@ -122,6 +141,8 @@ const PatientView = () => {
   };
 
   const openEditModal = (patient) => {
+    if (!canManagePatients) return;
+
     setModalMode("EDIT");
     setSelectedPatient(patient);
     setFormData({
@@ -131,13 +152,14 @@ const PatientView = () => {
       phone: patient.phone || "",
       address: patient.address || "",
       medicalHistory: patient.medicalHistory || "",
-      active: patient.isActive ?? true,
+      active: patient.active ?? true,
     });
     setShowModal(true);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!canManagePatients) return;
 
     try {
       const payload = {
@@ -151,11 +173,11 @@ const PatientView = () => {
       };
 
       if (modalMode === "ADD") {
-        await axios.post(`${API_BASE}/patients`, payload);
+        await axios.post(`${RECEPTIONIST_API_BASE}/patients`, payload);
         alert("Thêm thành công!");
       } else {
         await axios.put(
-          `${API_BASE}/patients/${selectedPatient.patientId}`,
+          `${RECEPTIONIST_API_BASE}/patients/${selectedPatient.patientId}`,
           payload,
         );
         alert("Cập nhật thành công!");
@@ -171,10 +193,12 @@ const PatientView = () => {
   };
 
   const handleDelete = async () => {
-    if (!selectedPatient) return;
+    if (!selectedPatient || !canManagePatients) return;
 
     try {
-      await axios.delete(`${API_BASE}/patients/${selectedPatient.patientId}`);
+      await axios.delete(
+        `${RECEPTIONIST_API_BASE}/patients/${selectedPatient.patientId}`,
+      );
       setShowDeleteModal(false);
       setSelectedPatient(null);
       fetchPatients();
@@ -184,11 +208,11 @@ const PatientView = () => {
     }
   };
 
-  if (!isReceptionist) {
+  if (!canViewPatients) {
     return (
       <div className="container-fluid p-4">
         <div className="alert alert-warning mb-0">
-          Chỉ lễ tân mới có quyền quản lý bệnh nhân!
+          Chỉ lễ tân hoặc bác sĩ mới có quyền xem danh sách bệnh nhân!
         </div>
       </div>
     );
@@ -215,9 +239,15 @@ const PatientView = () => {
               onChange={(event) => setKeyword(event.target.value)}
             />
           </div>
-          <button className="btn btn-success shadow-sm" onClick={openAddModal}>
-            <i className="fa-solid fa-plus me-1"></i> Thêm bệnh nhân
-          </button>
+
+          {canManagePatients && (
+            <button
+              className="btn btn-success shadow-sm"
+              onClick={openAddModal}
+            >
+              <i className="fa-solid fa-plus me-1"></i> Thêm bệnh nhân
+            </button>
+          )}
         </div>
       </div>
 
@@ -236,61 +266,65 @@ const PatientView = () => {
                     ? "staff-card-dropdown-open"
                     : ""
                 }`}
+                onClick={() => navigate(`/dashboard/patients/${patientKey}`)}
+                style={{ cursor: "pointer" }}
               >
-                <div
-                  className="dropdown position-absolute top-0 end-0 mt-3 me-3"
-                  data-patient-dropdown-root
-                  style={{ zIndex: 30 }}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <button
-                    className="action-btn border-0 bg-transparent p-1 dropdown-toggle dropdown-toggle-no-caret"
-                    type="button"
-                    aria-expanded={openDropdownId === patientKey}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setOpenDropdownId((currentId) =>
-                        currentId === patientKey ? null : patientKey,
-                      );
-                    }}
+                {canManagePatients && (
+                  <div
+                    className="dropdown position-absolute top-0 end-0 mt-3 me-3"
+                    data-patient-dropdown-root
+                    style={{ zIndex: 30 }}
+                    onClick={(event) => event.stopPropagation()}
                   >
-                    <i className="fa-solid fa-ellipsis-vertical"></i>
-                  </button>
+                    <button
+                      className="action-btn border-0 bg-transparent p-1 dropdown-toggle dropdown-toggle-no-caret"
+                      type="button"
+                      aria-expanded={openDropdownId === patientKey}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenDropdownId((currentId) =>
+                          currentId === patientKey ? null : patientKey,
+                        );
+                      }}
+                    >
+                      <i className="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
 
-                  <ul
-                    className={`dropdown-menu dropdown-menu-end shadow-sm border-0 staff-action-menu ${
-                      openDropdownId === patientKey ? "show" : ""
-                    }`}
-                  >
-                    <li>
-                      <button
-                        type="button"
-                        className="dropdown-item"
-                        onClick={() => {
-                          setOpenDropdownId(null);
-                          openEditModal(patient);
-                        }}
-                      >
-                        <i className="fa-regular fa-pen-to-square me-2 text-primary"></i>
-                        Sua
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        className="dropdown-item text-danger"
-                        onClick={() => {
-                          setOpenDropdownId(null);
-                          setSelectedPatient(patient);
-                          setShowDeleteModal(true);
-                        }}
-                      >
-                        <i className="fa-regular fa-trash-can me-2"></i>
-                        Xoa
-                      </button>
-                    </li>
-                  </ul>
-                </div>
+                    <ul
+                      className={`dropdown-menu dropdown-menu-end shadow-sm border-0 staff-action-menu ${
+                        openDropdownId === patientKey ? "show" : ""
+                      }`}
+                    >
+                      <li>
+                        <button
+                          type="button"
+                          className="dropdown-item"
+                          onClick={() => {
+                            setOpenDropdownId(null);
+                            openEditModal(patient);
+                          }}
+                        >
+                          <i className="fa-regular fa-pen-to-square me-2 text-primary"></i>
+                          Sửa
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className="dropdown-item text-danger"
+                          onClick={() => {
+                            setOpenDropdownId(null);
+                            setSelectedPatient(patient);
+                            setShowDeleteModal(true);
+                          }}
+                        >
+                          <i className="fa-regular fa-trash-can me-2"></i>
+                          Xóa
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                )}
 
                 <div className="d-flex gap-3 text-decoration-none text-dark align-items-start staff-card-body">
                   <div className="staff-avatar-box shadow-sm">
@@ -339,7 +373,7 @@ const PatientView = () => {
         </div>
       )}
 
-      {showModal && (
+      {canManagePatients && showModal && (
         <div
           className="modal fade show d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
@@ -422,8 +456,8 @@ const PatientView = () => {
                         required
                       >
                         <option value="Nam">Nam</option>
-                        <option value="Nu">Nữ</option>
-                        <option value="Khac">Khác</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
                       </select>
                     </div>
 
@@ -499,7 +533,7 @@ const PatientView = () => {
         </div>
       )}
 
-      {showDeleteModal && (
+      {canManagePatients && showDeleteModal && (
         <div
           className="modal fade show d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
@@ -517,10 +551,10 @@ const PatientView = () => {
                   ></i>
                 </div>
 
-                <h5 className="fw-bold mb-2 text-dark">Xac nhan xoa?</h5>
+                <h5 className="fw-bold mb-2 text-dark">Xác nhận xóa?</h5>
                 <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
-                  Bạn có chắc chắn muốn xóa bệnh nhân ?
-                  <strong>{selectedPatient?.fullName}</strong> khoi he thong?
+                  Bạn có chắc chắn muốn xóa bệnh nhân{" "}
+                  <strong>{selectedPatient?.fullName}</strong> khỏi hệ thống?
                 </p>
 
                 <div className="d-flex justify-content-center gap-2">
@@ -529,7 +563,7 @@ const PatientView = () => {
                     className="btn btn-light border px-4"
                     onClick={() => setShowDeleteModal(false)}
                   >
-                    Huy
+                    Hủy
                   </button>
                   <button
                     type="button"

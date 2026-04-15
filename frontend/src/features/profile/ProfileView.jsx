@@ -332,6 +332,24 @@ const ProfileView = () => {
     }
   };
 
+  const handleUnlockAccount = async () => {
+    if (!canLockAccount || profile.active) return;
+
+    try {
+      setLocking(true);
+      await axios.put(`${ADMIN_API_BASE}/employees/${targetUserId}/unlock`);
+      setShowLockModal(false);
+      setProfile((prev) => ({ ...prev, active: true }));
+      setInitialProfile((prev) => ({ ...prev, active: true }));
+      alert("Mở khóa tài khoản thành công!");
+    } catch (error) {
+      console.error("Lỗi khi mở khóa tài khoản:", error);
+      alert(error.response?.data || "Không thể mở khóa tài khoản!");
+    } finally {
+      setLocking(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container-fluid p-4">
@@ -424,13 +442,19 @@ const ProfileView = () => {
 
               {canLockAccount && (
                 <button
-                  className="btn btn-outline-danger w-100 fw-bold rounded-pill mb-3"
+                  className={`btn w-100 fw-bold rounded-pill mb-3 ${
+                    profile.active
+                      ? "btn-outline-danger"
+                      : "btn-outline-success"
+                  }`}
                   type="button"
                   onClick={() => setShowLockModal(true)}
-                  disabled={locking || !profile.active}
+                  disabled={locking}
                 >
-                  <i className="fa-solid fa-lock me-2"></i>
-                  {profile.active ? "Khóa tài khoản" : "Tài khoản đã khóa"}
+                  <i
+                    className={`fa-solid me-2 ${profile.active ? "fa-lock" : "fa-lock-open"}`}
+                  ></i>
+                  {profile.active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
                 </button>
               )}
 
@@ -668,9 +692,10 @@ const ProfileView = () => {
                   ></i>
                 </div>
 
-                <h5 className="fw-bold mb-2 text-dark">Xác nhận khóa?</h5>
                 <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
-                  Bạn có chắc chắn muốn khóa tài khoản này khỏi hệ thống?
+                  {profile?.active
+                    ? "Bạn có chắc chắn muốn khóa tài khoản này khỏi hệ thống?"
+                    : "Bạn có chắc chắn muốn mở khóa tài khoản này không?"}
                 </p>
 
                 <div className="d-flex justify-content-center gap-2">
@@ -685,7 +710,9 @@ const ProfileView = () => {
                   <button
                     type="button"
                     className="btn btn-danger px-4 shadow-sm"
-                    onClick={handleLockAccount}
+                    onClick={
+                      profile.active ? handleLockAccount : handleUnlockAccount
+                    }
                     disabled={locking}
                   >
                     {locking ? "Đang xử lý..." : "Xác nhận"}

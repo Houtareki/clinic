@@ -304,6 +304,34 @@ const DoctorDetailView = () => {
     }
   };
 
+  const handleUnlockAccount = async () => {
+    if (!canManageDoctor || doctor?.active) return;
+
+    setLocking(true);
+
+    try {
+      await axios.put(`${ADMIN_API_BASE}/employees/${id}/unlock`);
+      setShowDeleteModal(false);
+
+      setDoctor((prev) =>
+        prev
+          ? {
+              ...prev,
+              active: true,
+              isActive: true,
+            }
+          : prev,
+      );
+
+      alert("Mở khóa tài khoản thành công!");
+    } catch (error) {
+      console.error("Lỗi khi mở khóa tài khoản:", error);
+      alert(error.response?.data || "Không thể mở khóa tài khoản.");
+    } finally {
+      setLocking(false);
+    }
+  };
+
   const formatDate = (value) => {
     if (!value) return "Chưa cập nhật";
 
@@ -529,17 +557,19 @@ const DoctorDetailView = () => {
                   <hr className="text-muted opacity-25 my-4" />
 
                   <button
-                    className="btn btn-outline-danger w-100 fw-bold rounded-pill"
+                    className={`btn w-100 fw-bold rounded-pill ${
+                      doctor?.active
+                        ? "btn-outline-danger"
+                        : "btn-outline-success"
+                    }`}
                     type="button"
-                    onClick={() => {
-                      if (doctor?.active) {
-                        setShowDeleteModal(true);
-                      }
-                    }}
-                    disabled={locking || !doctor?.active}
+                    onClick={() => setShowDeleteModal(true)}
+                    disabled={locking}
                   >
-                    <i className="fa-solid fa-lock me-2"></i>
-                    {doctor?.active ? "Khóa tài khoản" : "Tài khoản đã khóa"}
+                    <i
+                      className={`fa-solid me-2 ${doctor?.active ? "fa-lock" : "fa-lock-open"}`}
+                    ></i>
+                    {doctor?.active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
                   </button>
                 </>
               )}
@@ -782,9 +812,14 @@ const DoctorDetailView = () => {
                   ></i>
                 </div>
 
-                <h5 className="fw-bold mb-2 text-dark">Xac nhan khoa?</h5>
+                <h5 className="fw-bold mb-2 text-dark">
+                  {doctor?.active ? "Xác nhận khóa?" : "Xác nhận mở khóa?"}
+                </h5>
+
                 <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
-                  Bạn có chắc chắn muốn xóa tài khoản này khỏi hệ thống ?
+                  {doctor?.active
+                    ? "Bạn có chắc chắn muốn khóa tài khoản này khỏi hệ thống?"
+                    : "Bạn có chắc chắn muốn mở khóa tài khoản này không?"}
                 </p>
 
                 <div className="d-flex justify-content-center gap-2">
@@ -797,8 +832,10 @@ const DoctorDetailView = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-4 shadow-sm"
-                    onClick={handleLockAccount}
+                    className={`btn px-4 shadow-sm ${doctor?.active ? "btn-danger" : "btn-success"}`}
+                    onClick={
+                      doctor?.active ? handleLockAccount : handleUnlockAccount
+                    }
                     disabled={locking}
                   >
                     {locking ? "Đang xử lý..." : "Xác nhận"}
