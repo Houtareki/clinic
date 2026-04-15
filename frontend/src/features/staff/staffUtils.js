@@ -55,8 +55,18 @@ export const normalizeDoctorRecord = (doctor) => {
     ...doctor,
     id: pickFirstValue(
       sources,
-      ["id", "doctorId", "accountId", "employeeId"],
+      ["id", "accountId", "doctorId", "employeeId"],
       doctor?.id,
+    ),
+    accountId: pickFirstValue(
+      sources,
+      ["accountId", "id"],
+      doctor?.accountId ?? doctor?.id,
+    ),
+    doctorId: pickFirstValue(
+      sources,
+      ["doctorId"],
+      doctor?.doctorId,
     ),
     role: "DOCTOR",
     fullName: pickFirstValue(sources, ["fullName", "name"], ""),

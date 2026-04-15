@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
@@ -347,8 +347,15 @@ const ProfileView = () => {
         <div className="col-lg-8">
           <div className="detail-card p-4 p-md-5">
             <form onSubmit={handleSubmit}>
-              <ProfileBasicSection profile={profile} onChange={handleProfileChange} />
-              <ProfileDoctorSection visible={isDoctor} profile={profile} onChange={handleProfileChange} />
+              <ProfileBasicSection
+                profile={profile}
+                onChange={handleProfileChange}
+              />
+              <ProfileDoctorSection
+                visible={isDoctor}
+                profile={profile}
+                onChange={handleProfileChange}
+              />
               <ProfilePasswordSection
                 canChangePassword={canChangePassword}
                 isViewingOwnProfile={isViewingOwnProfile}

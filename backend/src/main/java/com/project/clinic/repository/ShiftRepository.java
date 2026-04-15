@@ -15,7 +15,8 @@ public interface ShiftRepository extends JpaRepository<Shift, Integer> {
             "shiftRooms",
             "shiftRooms.room",
             "shiftRooms.shiftRoomDoctors",
-            "shiftRooms.shiftRoomDoctors.doctorAccount"
+            "shiftRooms.shiftRoomDoctors.doctor",
+            "shiftRooms.shiftRoomDoctors.doctor.account"
     })
     List<Shift> findByShiftDateBetween(LocalDate startDate, LocalDate endDate);
 
@@ -23,10 +24,13 @@ public interface ShiftRepository extends JpaRepository<Shift, Integer> {
             "JOIN FETCH s.shiftRooms sr " +
             "JOIN FETCH sr.room " +
             "JOIN FETCH sr.shiftRoomDoctors srd " +
-            "JOIN FETCH srd.doctorAccount " +
-            "WHERE srd.doctorAccount.id = :doctorId " +
+            "JOIN FETCH srd.doctor d " +
+            "JOIN FETCH d.account a " +
+            "WHERE a.id = :doctorId " +
             "AND s.shiftDate BETWEEN :startDate AND :endDate")
     List<Shift> findByDoctorIdAndDateBetween(int doctorId, LocalDate startDate, LocalDate endDate);
+
+    List<Shift> findByShiftDate(LocalDate shiftDate);
 
     long countByShiftDateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
 }

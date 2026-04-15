@@ -10,6 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DoctorResponseDTO extends EmployeeResponseDTO{
+    Integer accountId;
+    Integer doctorId;
     String specialty;
     String degree;
     String bio;

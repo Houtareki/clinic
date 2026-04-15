@@ -57,7 +57,7 @@ public class ReceptionistController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bác sĩ");
         }
 
-        Doctor doctor = doctorService.findById(id).orElse(null);
+        Doctor doctor = doctorService.findByAccountId(id).orElse(null);
 
         return ResponseEntity.ok(
                 DoctorSimpleMapper.toSimple(account, doctor)

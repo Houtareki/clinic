@@ -13,10 +13,12 @@ public class DoctorSimpleMapper {
         DoctorSimpleResponseDTO dto = new DoctorSimpleResponseDTO();
 
         dto.setId(acc.getId());
+        dto.setAccountId(acc.getId());
         dto.setFullName(acc.getFullName());
         dto.setEmail(acc.getEmail());
         dto.setPhone(acc.getPhone());
         if (doc != null) {
+            dto.setDoctorId(doc.getDoctorId());
             dto.setSpecialty(doc.getSpecialty());
             dto.setDegree(doc.getDegree());
         }
@@ -27,7 +29,7 @@ public class DoctorSimpleMapper {
     public static List<DoctorSimpleResponseDTO> toDoctorSimple(List<Account> accounts, List<Doctor> doctors) {
         return accounts.stream().map(acc -> {
             Doctor doc = doctors.stream()
-                    .filter(d -> d.getDoctorId() == acc.getId())
+                    .filter(d -> d.getAccount() != null && d.getAccount().getId() == acc.getId())
                     .findFirst()
                     .orElse(null);
 

@@ -247,9 +247,9 @@ const DoctorDetailView = () => {
 
           <div className="col-lg-8">
             <DoctorWeeklySchedule
-              doctorId={doctor.id || id}
+              doctorId={doctor.doctorId || doctor.id || id}
               viewerRole={user?.role || "RECEPTIONIST"}
-              viewerId={Number(user?.accountId) || Number(doctor.id) || 1}
+              viewerId={Number(user?.accountId) || Number(doctor.accountId) || Number(doctor.id) || 1}
             />
             <DoctorBioCard doctor={doctor} />
           </div>

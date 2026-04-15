@@ -11,6 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DoctorSimpleResponseDTO {
     private int id;
+    private Integer accountId;
+    private Integer doctorId;
     private String fullName;
     private String phone;
     private String email;

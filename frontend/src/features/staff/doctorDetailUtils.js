@@ -57,7 +57,7 @@ export const extractListItems = (payload) => {
 
 export const getDoctorRecordId = (record) =>
   Number(
-    record?.id ?? record?.doctorId ?? record?.accountId ?? record?.employeeId,
+    record?.id ?? record?.accountId ?? record?.doctorId ?? record?.employeeId,
   );
 
 export const buildDoctorRecord = (doctorId, sources) => {
@@ -73,8 +73,18 @@ export const buildDoctorRecord = (doctorId, sources) => {
     ...firstSource,
     id: pickFirstValue(
       availableSources,
-      ["id", "doctorId", "accountId"],
+      ["id", "accountId", "doctorId"],
       doctorId,
+    ),
+    accountId: pickFirstValue(
+      availableSources,
+      ["accountId", "id"],
+      doctorId,
+    ),
+    doctorId: pickFirstValue(
+      availableSources,
+      ["doctorId"],
+      "",
     ),
     role: "DOCTOR",
     fullName: pickFirstValue(availableSources, ["fullName", "name"]),

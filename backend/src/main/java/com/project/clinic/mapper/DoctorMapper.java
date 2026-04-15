@@ -16,6 +16,7 @@ public class DoctorMapper {
         DoctorResponseDTO dto = new DoctorResponseDTO();
 
         dto.setId(account.getId());
+        dto.setAccountId(account.getId());
         dto.setUsername(account.getUsername());
         dto.setFullName(account.getFullName());
         dto.setEmail(account.getEmail());
@@ -26,6 +27,7 @@ public class DoctorMapper {
         dto.setCreatedAt(account.getCreatedAt().toString());
 
         if (doctor != null) {
+            dto.setDoctorId(doctor.getDoctorId());
             dto.setSpecialty(doctor.getSpecialty());
             dto.setDegree(doctor.getDegree());
             dto.setBio(doctor.getBio());
