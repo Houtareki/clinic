@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../context/useAuth";
@@ -17,11 +17,37 @@ import {
   getDoctorRecordId,
 } from "../utils/doctorDetailUtils";
 
+const PROFILE_API_BASE = "http://localhost:8080/api/profile";
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+]);
+
+const getAvatarValidationError = (file) => {
+  if (!file) {
+    return "Vui lòng chọn ảnh.";
+  }
+
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return "Chỉ hỗ trợ JPG, PNG, GIF hoặc WEBP.";
+  }
+
+  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+    return "Kích thước ảnh tối đa là 2MB.";
+  }
+
+  return "";
+};
+
 const DoctorDetailView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const canManageDoctor = user?.role === "ADMIN";
+  const avatarInputRef = useRef(null);
 
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +55,7 @@ const DoctorDetailView = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [locking, setLocking] = useState(false);
   const [formData, setFormData] = useState(createInitialDoctorForm);
 
@@ -138,6 +165,62 @@ const DoctorDetailView = () => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarUpload = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const validationError = getAvatarValidationError(file);
+    if (validationError) {
+      alert(validationError);
+
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+
+      const avatarFormData = new FormData();
+      avatarFormData.append("file", file);
+
+      const response = await axios.post(
+        `${PROFILE_API_BASE}/upload-avatar`,
+        avatarFormData,
+        {
+          headers: {
+            "X-User-Id": id,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      const avatarUrl =
+        typeof response.data === "string"
+          ? response.data
+          : response.data?.avatarUrl || "";
+
+      setFormData((prev) => ({
+        ...prev,
+        avatarUrl,
+      }));
+    } catch (error) {
+      console.error("Lỗi khi tải ảnh bác sĩ:", error);
+      alert(error.response?.data || "Không thể tải ảnh bác sĩ.");
+    } finally {
+      setUploadingAvatar(false);
+
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
   };
 
   const handleSubmitEdit = async (event) => {
@@ -292,7 +375,11 @@ const DoctorDetailView = () => {
         <DoctorEditModal
           formData={formData}
           saving={saving}
+          uploadingAvatar={uploadingAvatar}
+          fileInputRef={avatarInputRef}
           onChange={handleInputChange}
+          onAvatarUpload={handleAvatarUpload}
+          onOpenFilePicker={() => avatarInputRef.current?.click()}
           onClose={() => setShowEditModal(false)}
           onSubmit={handleSubmitEdit}
         />

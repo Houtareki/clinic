@@ -18,10 +18,34 @@ import {
   normalizeProfileData,
 } from "../utils/profileUtils";
 
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+]);
+
+const getAvatarValidationError = (file) => {
+  if (!file) {
+    return "Vui lòng chọn ảnh.";
+  }
+
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return "Chỉ hỗ trợ JPG, PNG, GIF hoặc WEBP.";
+  }
+
+  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+    return "Kích thước ảnh tối đa là 2MB.";
+  }
+
+  return "";
+};
+
 const ProfileView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile] = useState(createEmptyProfile);
@@ -59,6 +83,19 @@ const ProfileView = () => {
   const canLockAccount = isManagedEmployeeProfile;
   const roleLabel = getRoleLabel(profile.role);
 
+  const syncCurrentUser = (nextProfile) => {
+    if (!isViewingOwnProfile) {
+      return;
+    }
+
+    updateUser({
+      accountId: targetUserId,
+      role: nextProfile?.role || user?.role,
+      fullName: nextProfile?.fullName ?? user?.fullName ?? "",
+      avatarUrl: nextProfile?.avatarUrl ?? user?.avatarUrl ?? "",
+    });
+  };
+
   const fetchProfile = async () => {
     try {
       setLoading(true);
@@ -72,6 +109,7 @@ const ProfileView = () => {
       const normalized = normalizeProfileData(response.data);
       setProfile(normalized);
       setInitialProfile(normalized);
+      syncCurrentUser(normalized);
     } catch (error) {
       alert(error.response?.data || error.message || "Không tải được hồ sơ");
     } finally {
@@ -178,6 +216,7 @@ const ProfileView = () => {
     const normalized = normalizeProfileData(response.data, profile);
     setProfile(normalized);
     setInitialProfile(normalized);
+    syncCurrentUser(normalized);
   };
 
   const updatePassword = async (passwordAction) => {
@@ -222,6 +261,17 @@ const ProfileView = () => {
 
     if (!file) return;
 
+    const validationError = getAvatarValidationError(file);
+    if (validationError) {
+      alert(validationError);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      return;
+    }
+
     try {
       setUploadingAvatar(true);
 
@@ -249,6 +299,10 @@ const ProfileView = () => {
         ...prev,
         avatarUrl,
       }));
+      syncCurrentUser({
+        ...profile,
+        avatarUrl,
+      });
     } catch (error) {
       console.error("Lỗi khi tải ảnh đại diện:", error);
       alert(error.response?.data || "Không thể tải ảnh đại diện!");

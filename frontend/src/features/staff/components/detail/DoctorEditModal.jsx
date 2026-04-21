@@ -1,7 +1,20 @@
 import { useMemo } from "react";
-import { SPECIALTY_OPTIONS } from "../../utils/doctorDetailUtils";
+import {
+  getDoctorAvatar,
+  SPECIALTY_OPTIONS,
+} from "../../utils/doctorDetailUtils";
 
-function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
+function DoctorEditModal({
+  formData,
+  saving,
+  uploadingAvatar,
+  fileInputRef,
+  onChange,
+  onAvatarUpload,
+  onOpenFilePicker,
+  onClose,
+  onSubmit,
+}) {
   const specialtySelectOptions = useMemo(() => {
     if (!formData.specialty || SPECIALTY_OPTIONS.includes(formData.specialty)) {
       return SPECIALTY_OPTIONS;
@@ -9,6 +22,12 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
 
     return [formData.specialty, ...SPECIALTY_OPTIONS];
   }, [formData.specialty]);
+
+  const avatarSrc = getDoctorAvatar(formData);
+  const fallbackAvatar = getDoctorAvatar({
+    ...formData,
+    avatarUrl: "",
+  });
 
   return (
     <div
@@ -34,7 +53,7 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
               className="modal-title fw-bold text-success"
               id="editDoctorModalLabel"
             >
-              <i className="fa-solid fa-user-doctor me-2"></i> Cập nhật hồ sơ
+              <i className="fa-solid fa-user-doctor me-2"></i> Cap nhat ho so
             </h5>
 
             <button
@@ -156,21 +175,57 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
                     name="degree"
                     value={formData.degree}
                     onChange={onChange}
-                    placeholder="VD: Tien si"
+                    placeholder="VD: Tiến sĩ"
                     required
                   />
                 </div>
 
                 <div className="col-12">
                   <label className="form-label fw-medium">Ảnh đại diện</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="avatarUrl"
-                    value={formData.avatarUrl}
-                    onChange={onChange}
-                    placeholder="Link URL"
-                  />
+                  <div className="border rounded-4 bg-light p-3">
+                    <div className="d-flex flex-column flex-md-row align-items-md-center gap-3">
+                      <img
+                        src={avatarSrc}
+                        alt="Avatar"
+                        className="rounded-circle border border-2 border-white shadow-sm"
+                        style={{
+                          width: "96px",
+                          height: "96px",
+                          objectFit: "cover",
+                        }}
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src = fallbackAvatar;
+                        }}
+                      />
+
+                      <div className="flex-grow-1">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary"
+                          onClick={onOpenFilePicker}
+                          disabled={uploadingAvatar}
+                        >
+                          <i className="fa-solid fa-camera me-2"></i>
+                          {uploadingAvatar
+                            ? "Đang tải ảnh..."
+                            : "Chọn ảnh từ máy"}
+                        </button>
+
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/gif,image/webp"
+                          hidden
+                          onChange={onAvatarUpload}
+                        />
+
+                        <div className="form-text mt-2">
+                          JPG, PNG, GIF hoặc WEBP. Kích thước tối đa 2MB.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="col-12">
@@ -181,7 +236,7 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
                     name="bio"
                     value={formData.bio}
                     onChange={onChange}
-                    placeholder="Nhap kinh nghiem lam viec, gioi thieu ban than..."
+                    placeholder="Nhập kinh nghiệm làm việc, giới thiệu bản thân..."
                   ></textarea>
                 </div>
               </div>
@@ -200,9 +255,9 @@ function DoctorEditModal({ formData, saving, onChange, onClose, onSubmit }) {
                 <button
                   type="submit"
                   className="btn btn-primary-custom"
-                  disabled={saving}
+                  disabled={saving || uploadingAvatar}
                 >
-                  {saving ? "Dang luu..." : "Luu"}
+                  {saving ? "Đang lưu..." : "Lưu"}
                 </button>
               </div>
             </form>

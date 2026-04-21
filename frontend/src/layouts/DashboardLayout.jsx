@@ -107,6 +107,13 @@ function Header() {
   const navigate = useNavigate();
   const firstName = user?.fullName?.split(" ").pop() || "U";
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+    firstName,
+  )}&background=198754&color=fff`;
+  const avatarSrc =
+    user?.avatarUrl && user.avatarUrl.trim() !== ""
+      ? user.avatarUrl
+      : fallbackAvatar;
 
   function toggleDropdown() {
     setIsDropdownOpen((prev) => !prev);
@@ -139,11 +146,15 @@ function Header() {
             </div>
           </div>
           <img
-            src={`https://ui-avatars.com/api/?name=${firstName}&background=198754&color=fff`}
+            src={avatarSrc}
             className="rounded-circle"
             width="38"
             height="38"
             alt="avatar"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = fallbackAvatar;
+            }}
           />
         </div>
 
