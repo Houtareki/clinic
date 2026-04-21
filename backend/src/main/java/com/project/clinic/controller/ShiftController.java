@@ -96,7 +96,7 @@ public class ShiftController {
         }
 
         try {
-            Shift createdShift = shiftService.createShift(request);
+            shiftService.createShift(request);
             return ResponseEntity.status(HttpStatus.CREATED).body("Tạo ca trực thành công");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi tạo ca trực: " + e.getMessage());
@@ -121,7 +121,7 @@ public class ShiftController {
         }
 
         try {
-            Shift updatedShift = shiftService.updateShift(id, request);
+            shiftService.updateShift(id, request);
             return ResponseEntity.ok("Cập nhật ca trực thành công");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
