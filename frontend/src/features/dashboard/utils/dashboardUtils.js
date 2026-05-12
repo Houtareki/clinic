@@ -11,7 +11,7 @@ const HERO_CONTENT = {
       "Theo dõi nhân sự, hoạt động và hiệu suất của phòng khám trong ngày.",
   },
   RECEPTIONIST: {
-    title: "Trạng thái tiêp đón hôm nay",
+    title: "Trạng thái tiếp đón hôm nay",
     subtitle: "Theo dõi số lượng bệnh nhân đến, lịch hẹn và ca trực.",
   },
   DOCTOR: {
@@ -24,60 +24,30 @@ const HERO_CONTENT = {
 const QUICK_LINKS = {
   ADMIN: [
     {
-      to: "/dashboard/staff",
-      icon: "fa-users",
-      title: "Quản lý nhân sự",
-      description: "Xem và quản lý thông tin nhân sự.",
+      to: "/dashboard/staff?quickAction=add-staff",
+      icon: "fa-user-plus",
+      title: "Thêm nhân sự",
+      description: "Mở nhanh biểu mẫu tạo tài khoản nhân viên hoặc bác sĩ mới.",
       tone: "emerald",
-    },
-    {
-      to: "/dashboard/profile",
-      icon: "fa-id-badge",
-      title: "Hồ sơ cá nhân",
-      description: "Kiểm tra thông tin tài khoản và cập nhật hồ sơ quản trị.",
-      tone: "slate",
     },
   ],
   RECEPTIONIST: [
     {
-      to: "/dashboard/staff",
-      icon: "fa-user-doctor",
-      title: "Danh sách bác sĩ",
-      description:
-        "Theo dõi đội ngũ bác sĩ đang hoạt động và xem nhanh chi tiết.",
-      tone: "emerald",
-    },
-    {
-      to: "/dashboard/patients",
+      to: "/dashboard/patients?quickAction=add-patient",
       icon: "fa-hospital-user",
-      title: "Danh sách bệnh nhân",
-      description: "Tiếp nhận, cập nhật hồ sơ và tạo lịch khám cho bệnh nhân.",
+      title: "Thêm bệnh nhân",
+      description: "Mở nhanh biểu mẫu tiếp nhận bệnh nhân mới.",
       tone: "blue",
     },
     {
-      to: "/dashboard/shift",
-      icon: "fa-calendar-days",
-      title: "Quản lý lịch trực",
-      description: "Theo dõi và cập nhật phân công ca trực trong ngày.",
+      to: "/dashboard/shift?quickAction=add-shift",
+      icon: "fa-calendar-plus",
+      title: "Thêm lịch trực",
+      description: "Mở nhanh form tạo ca trực và phân công bác sĩ theo phòng.",
       tone: "amber",
     },
   ],
-  DOCTOR: [
-    {
-      to: "/dashboard/patients",
-      icon: "fa-notes-medical",
-      title: "Hồ sơ khám bệnh",
-      description: "Mở nhanh danh sách bệnh nhân và cập nhật kết quả khám.",
-      tone: "blue",
-    },
-    {
-      to: "/dashboard/shift",
-      icon: "fa-clock",
-      title: "Lịch trực của tôi",
-      description: "Kiểm tra ca trực trong tuần và phân bổ lịch làm việc.",
-      tone: "emerald",
-    },
-  ],
+  DOCTOR: [],
 };
 
 const createAdminCards = (stats) => [

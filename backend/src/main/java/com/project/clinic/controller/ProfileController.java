@@ -70,7 +70,7 @@ public class ProfileController {
     public ResponseEntity<?> getMyProfile(@RequestHeader("X-User-Id") int userId) {
         Account account = accountService.findById(userId);
         if (account == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nguoi dung");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
         }
 
         if (account.getRole() == Account.Role.DOCTOR) {
@@ -89,7 +89,7 @@ public class ProfileController {
     ) {
         Account account = accountService.findById(userId);
         if (account == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nguoi dung");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
         }
 
         if (request.getFullName() != null) {
@@ -136,17 +136,17 @@ public class ProfileController {
     ) {
         Account account = accountService.findById(userId);
         if (account == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nguoi dung");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
         }
 
         if (!account.getPassword().equals(request.getCurrentPassword())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mat khau hien tai khong chinh xac!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu hiện tại không chính xác!");
         }
 
         account.setPassword(request.getNewPassword());
         accountService.save(account);
 
-        return ResponseEntity.ok("Doi mat khau thanh cong!");
+        return ResponseEntity.ok("Đổi mật khẩu thành công!");
     }
 
     @PostMapping("/upload-avatar")
@@ -156,20 +156,20 @@ public class ProfileController {
     ) {
         Account account = accountService.findById(userId);
         if (account == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Khong tim thay nguoi dung");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người dùng");
         }
 
         if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Vui long chon file anh!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Vui lòng chọn file ảnh!");
         }
 
         if (!isSupportedImageType(file)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Chi chap nhan JPG, PNG, GIF hoac WEBP!");
+                    .body("Chỉ chấp nhận JPG, PNG, GIF hoặc WEBP!");
         }
 
         if (file.getSize() > MAX_AVATAR_SIZE_BYTES) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Kich thuoc anh toi da la 2MB!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Kích thước ảnh tối đa là 2MB!");
         }
 
         String previousAvatarUrl = account.getAvatarUrl();
@@ -190,7 +190,7 @@ public class ProfileController {
         } catch (Exception exception) {
             deleteStoredAvatarByFileName(storedFileName);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Khong the luu anh dai dien luc nay!");
+                    .body("Không thể lưu ảnh đại diện lúc này!");
         }
     }
 
@@ -209,7 +209,7 @@ public class ProfileController {
         Path targetFile = avatarStorageDirectory.resolve(storedFileName).normalize();
 
         if (!targetFile.startsWith(avatarStorageDirectory)) {
-            throw new IOException("Invalid avatar storage path");
+            throw new IOException("Đường dẫn lưu trữ không hợp lệ!");
         }
 
         Files.copy(file.getInputStream(), targetFile, StandardCopyOption.REPLACE_EXISTING);

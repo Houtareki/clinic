@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "../../../styles/entity-list.css";
 import { useAuth } from "../../../context/useAuth";
 import PatientCard from "../components/list/PatientCard";
@@ -14,6 +14,7 @@ import {
 
 const PatientView = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
 
   const isReceptionist = user?.role === "RECEPTIONIST";
@@ -97,14 +98,37 @@ const PatientView = () => {
     setSelectedPatient(null);
   };
 
-  const openAddModal = () => {
+  const openAddModal = useCallback(() => {
     if (!canManagePatients) return;
 
     setModalMode("ADD");
     setSelectedPatient(null);
     setFormData(createInitialPatientForm());
     setShowModal(true);
-  };
+  }, [canManagePatients]);
+
+  useEffect(() => {
+    if (
+      searchParams.get("quickAction") !== "add-patient" ||
+      !canManagePatients
+    ) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      openAddModal();
+      setSearchParams(
+        (currentParams) => {
+          const nextParams = new URLSearchParams(currentParams);
+          nextParams.delete("quickAction");
+          return nextParams;
+        },
+        { replace: true },
+      );
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [canManagePatients, openAddModal, searchParams, setSearchParams]);
 
   const openEditModal = (patient) => {
     if (!canManagePatients) return;
@@ -205,7 +229,10 @@ const PatientView = () => {
           </div>
 
           {canManagePatients && (
-            <button className="btn btn-success shadow-sm" onClick={openAddModal}>
+            <button
+              className="btn btn-success shadow-sm"
+              onClick={openAddModal}
+            >
               <i className="fa-solid fa-plus me-1"></i> Thêm bệnh nhân
             </button>
           )}

@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import "../../../styles/entity-list.css";
 import { useAuth } from "../../../context/useAuth";
@@ -17,6 +17,7 @@ import {
 
 const StaffView = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN";
   const isReceptionist = user?.role === "RECEPTIONIST";
@@ -165,14 +166,31 @@ const StaffView = () => {
     setSelectedStaff(null);
   };
 
-  const openAddModal = (defaultRole = "DOCTOR") => {
+  const openAddModal = useCallback((defaultRole = "DOCTOR") => {
     if (!canManageStaff) return;
 
     setModalMode("ADD");
     setSelectedStaff(null);
     setFormData(createInitialStaffForm(defaultRole));
     setShowModal(true);
-  };
+  }, [canManageStaff]);
+
+  useEffect(() => {
+    if (searchParams.get("quickAction") !== "add-staff" || !canManageStaff) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      openAddModal();
+      setSearchParams((currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        nextParams.delete("quickAction");
+        return nextParams;
+      }, { replace: true });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [canManageStaff, openAddModal, searchParams, setSearchParams]);
 
   const openEditModal = (staff) => {
     if (!canManageStaff) return;

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../context/useAuth";
 import "../styles/shift.css";
 import ShiftCalendarGrid from "../components/schedule/ShiftCalendarGrid";
@@ -9,6 +10,7 @@ import { useShiftManagement } from "../hooks/useShiftManagement";
 
 function ShiftView() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     isReceptionist,
     loading,
@@ -36,6 +38,23 @@ function ShiftView() {
     handleUpdateShift,
     handleDeleteShift,
   } = useShiftManagement(user);
+
+  useEffect(() => {
+    if (searchParams.get("quickAction") !== "add-shift" || !isReceptionist) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      openCreateDrawer();
+      setSearchParams((currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+        nextParams.delete("quickAction");
+        return nextParams;
+      }, { replace: true });
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isReceptionist, openCreateDrawer, searchParams, setSearchParams]);
 
   return (
     <div className="container-fluid p-4">

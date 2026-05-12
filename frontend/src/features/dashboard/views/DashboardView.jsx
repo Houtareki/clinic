@@ -128,7 +128,7 @@ function DashboardView() {
         </div>
       </section>
 
-      {quickLinks.length > 0 ? (
+      {quickLinks.length > 0 && (
         <section>
           <div className="dashboard-section-heading mb-3">
             <div>
@@ -141,13 +141,6 @@ function DashboardView() {
               <DashboardQuickLinkCard key={link.to} {...link} />
             ))}
           </div>
-        </section>
-      ) : (
-        <section className="dashboard-empty p-4">
-          <h5 className="fw-bold text-dark mb-2">Chưa có liên kết nhanh</h5>
-          <p className="mb-0 text-muted">
-            Vai trò hiện tại không có tác vụ điều hướng riêng trên dashboard.
-          </p>
         </section>
       )}
     </div>
