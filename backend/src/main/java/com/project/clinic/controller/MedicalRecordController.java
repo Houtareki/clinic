@@ -52,6 +52,7 @@ public class MedicalRecordController {
     }
 
     @PostMapping("/patient/{patientId}")
+    @Transactional
     public ResponseEntity<?> createRecord(@PathVariable int patientId, @RequestBody MedicalRecord record) {
         try {
             if (record.getDoctor() == null) {
@@ -145,6 +146,7 @@ public class MedicalRecordController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteRecord(@PathVariable int id) {
         try {
             MedicalRecord record = medicalRecordService.findById(id);

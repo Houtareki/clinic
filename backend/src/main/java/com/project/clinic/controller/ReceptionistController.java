@@ -13,6 +13,7 @@ import com.project.clinic.service.PatientService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -88,6 +89,7 @@ public class ReceptionistController {
 
     // thêm bệnh nhân
     @PostMapping("/patients")
+    @Transactional
     public ResponseEntity<?> addPatient(@RequestBody Patient patient) {
         if (patient.getPhone() != null && patientService.existsByPhone(patient.getPhone())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Số điện thoại này đã được đăng ký");
@@ -109,6 +111,7 @@ public class ReceptionistController {
 
     // cập nhật thông tin bệnh nhân
     @PutMapping("/patients/{id}")
+    @Transactional
     public ResponseEntity<?> updatePatient(@PathVariable int id, @RequestBody Patient patient) {
         try {
             Patient existingPatient = patientService.findById(id);
@@ -130,6 +133,7 @@ public class ReceptionistController {
     }
 
     @DeleteMapping("/patients/{id}")
+    @Transactional
     public ResponseEntity<?> deletePatient(@PathVariable int id) {
         try {
             Patient existingPatient = patientService.findById(id);

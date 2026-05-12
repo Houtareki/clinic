@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -80,6 +81,7 @@ public class ShiftController {
     }
 
     @PostMapping
+    @Transactional
     public ResponseEntity<?> createShift(
             @RequestBody ShiftRequestDTO request,
             @RequestHeader("X-User-Role") String roleStr) {
@@ -104,6 +106,7 @@ public class ShiftController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> updateShift(
             @PathVariable int id,
             @RequestBody ShiftRequestDTO request,
@@ -129,6 +132,7 @@ public class ShiftController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteShift(
             @PathVariable int id,
             @RequestHeader("X-User-Role") String roleStr) {

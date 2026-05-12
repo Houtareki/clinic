@@ -130,6 +130,7 @@ public class ProfileController {
     }
 
     @PutMapping("/change-password")
+    @Transactional
     public ResponseEntity<?> changePassword(
             @RequestHeader("X-User-Id") int userId,
             @RequestBody ChangePasswordDTO request
@@ -150,6 +151,7 @@ public class ProfileController {
     }
 
     @PostMapping("/upload-avatar")
+    @Transactional
     public ResponseEntity<?> uploadAvatar(
             @RequestHeader("X-User-Id") int userId,
             @RequestParam("file") MultipartFile file
