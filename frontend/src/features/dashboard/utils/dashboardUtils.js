@@ -30,6 +30,13 @@ const QUICK_LINKS = {
       description: "Mở nhanh biểu mẫu tạo tài khoản nhân viên hoặc bác sĩ mới.",
       tone: "emerald",
     },
+    {
+      to: "/dashboard/rooms/admin?quickAction=add-room",
+      icon: "fa-door-open",
+      title: "Thêm phòng",
+      description: "Mở nhanh biểu mẫu tạo phòng mới.",
+      tone: "slate",
+    },
   ],
   RECEPTIONIST: [
     {

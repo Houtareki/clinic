@@ -14,6 +14,7 @@ import PatientView from "./features/patient/views/PatientView";
 import ProfileView from "./features/profile/views/ProfileView";
 import PatientDetailView from "./features/patient/views/PatientDetailView";
 import ShiftView from "./features/shift/views/ShiftView";
+import RoomView from "./features/room/views/RoomView";
 import "./styles/common.css";
 import "./styles/public.css";
 
@@ -96,6 +97,14 @@ function App() {
             element={
               <RoleRoute roles={["RECEPTIONIST", "DOCTOR"]}>
                 <ShiftView />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="rooms/admin"
+            element={
+              <RoleRoute roles={["ADMIN"]}>
+                <RoomView />
               </RoleRoute>
             }
           />

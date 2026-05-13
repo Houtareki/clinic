@@ -6,6 +6,11 @@ const MENU_CONFIG = {
   ADMIN: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
     { path: "/dashboard/staff", label: "Quản lý nhân sự", icon: "fa-users" },
+    {
+      path: "/dashboard/rooms/admin",
+      label: "Quản lý phòng",
+      icon: "fa-door-open",
+    },
   ],
   DOCTOR: [
     { path: "/dashboard", label: "Dashboard", icon: "fa-house" },
