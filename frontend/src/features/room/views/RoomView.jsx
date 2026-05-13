@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import "../../../styles/entity-list.css";
 import { useAuth } from "../../../context/useAuth";
 
@@ -11,7 +11,6 @@ import RoomDeleteModal from "../components/RoomDeleteModal";
 const RoomView = () => {
   const ROOM_API_BASE_URL = "http://localhost:8080/api/rooms";
 
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
 
@@ -175,6 +174,20 @@ const RoomView = () => {
     }
   };
 
+  const handleUnlock = async () => {
+    if (!canManageRoom) return;
+
+    try {
+      await axios.put(`${ROOM_API_BASE_URL}/${selectedRoom.roomId}/unlock`);
+      alert("Khôi phục phòng thành công");
+      handleCloseDeleteModal();
+      await fetchRoom();
+    } catch (error) {
+      console.error("Lỗi khi khôi phục phòng:", error);
+      alert("Lỗi khi khôi phục phòng");
+    }
+  };
+
   return (
     <div className="container-fluid p-4">
       <div className="staff-view-header">
@@ -232,6 +245,11 @@ const RoomView = () => {
                 setSelectedRoom(room);
                 setShowDeleteModal(true);
               }}
+              onUnlock={() => {
+                setOpenDropdownId(null);
+                setSelectedRoom(room);
+                setShowDeleteModal(true);
+              }}
             />
           );
         })}
@@ -257,7 +275,13 @@ const RoomView = () => {
         <RoomDeleteModal
           room={selectedRoom}
           onClose={handleCloseDeleteModal}
-          onConfirm={handleDelete}
+          onConfirm={() => {
+            if (selectedRoom.active) {
+              handleDelete();
+            } else {
+              handleUnlock();
+            }
+          }}
         />
       )}
     </div>

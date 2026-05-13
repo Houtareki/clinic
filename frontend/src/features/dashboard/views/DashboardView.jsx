@@ -122,8 +122,8 @@ function DashboardView() {
         </div>
 
         <div className="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
-          {statCards.map((card) => (
-            <DashboardStatCard key={card.key} {...card} />
+          {statCards.map(({ key, ...card }) => (
+            <DashboardStatCard key={key} {...card} />
           ))}
         </div>
       </section>
@@ -137,8 +137,8 @@ function DashboardView() {
           </div>
 
           <div className="row row-cols-1 row-cols-lg-2 row-cols-xxl-3 g-3">
-            {quickLinks.map((link) => (
-              <DashboardQuickLinkCard key={link.to} {...link} />
+            {quickLinks.map(({ to, ...link }) => (
+              <DashboardQuickLinkCard key={to} {...link} />
             ))}
           </div>
         </section>

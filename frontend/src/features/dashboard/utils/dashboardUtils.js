@@ -67,6 +67,41 @@ const createAdminCards = (stats) => [
     helperText: "",
   },
   {
+    key: "total-staffs",
+    icon: "fa-users",
+    tone: "blue",
+    title: "Tổng số nhân sự",
+    value: stats.totalStaffs ?? 0,
+    helperText: "",
+  },
+  {
+    key: "shifts",
+    icon: "fa-calendar-check",
+    tone: "amber",
+    title: "Tổng ca trực hôm nay",
+    value: stats.totalShiftsToday ?? 0,
+    helperText: "",
+  },
+  {
+    key: "total-rooms",
+    icon: "fa-door-closed",
+    tone: "slate",
+    title: "Tổng số phòng",
+    value: stats.totalRooms ?? 0,
+    helperText: "",
+  },
+];
+
+const createReceptionistCards = (stats) => [
+  {
+    key: "total-doctors",
+    icon: "fa-user-doctor",
+    tone: "emerald",
+    title: "Tổng số bác sĩ đang hoạt động",
+    value: stats.totalDoctors ?? 0,
+    helperText: "",
+  },
+  {
     key: "new-patients",
     icon: "fa-user-plus",
     tone: "blue",
@@ -143,8 +178,17 @@ export const getHeroSummary = (role, stats) => {
   return `Hệ thống hiện có ${stats.totalDoctors ?? 0} bác sĩ đang hoạt động, ${stats.newPatientsToday ?? 0} bệnh nhân mới và ${stats.totalAppointmentsToday ?? 0} lịch khám được tạo trong hôm nay.`;
 };
 
-export const getDashboardStatCards = (role, stats = {}) =>
-  role === "DOCTOR" ? createDoctorCards(stats) : createAdminCards(stats);
+export const getDashboardStatCards = (role, stats = {}) => {
+  switch (role) {
+    case "DOCTOR":
+      return createDoctorCards(stats);
+    case "RECEPTIONIST":
+      return createReceptionistCards(stats);
+    case "ADMIN":
+    default:
+      return createAdminCards(stats);
+  }
+};
 
 export const getDashboardQuickLinks = (role) => QUICK_LINKS[role] || [];
 

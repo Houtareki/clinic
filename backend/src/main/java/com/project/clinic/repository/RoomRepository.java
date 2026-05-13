@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Integer> {
     Page<Room> findByNameContainingIgnoreCaseAndIsActiveTrue(String keyword, Pageable pageable);
+
+    long countByIsActiveTrue();
 }

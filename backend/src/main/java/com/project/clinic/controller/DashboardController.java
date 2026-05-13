@@ -5,6 +5,7 @@ import com.project.clinic.entity.Account;
 import com.project.clinic.repository.AccountRepository;
 import com.project.clinic.repository.MedicalRecordRepository;
 import com.project.clinic.repository.PatientRepository;
+import com.project.clinic.repository.RoomRepository;
 import com.project.clinic.repository.ShiftRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,16 +22,19 @@ public class DashboardController {
     private final PatientRepository patientRepository;
     private final ShiftRepository shiftRepository;
     private final MedicalRecordRepository medicalRecordRepository;
+    private final RoomRepository roomRepository;
 
     @Autowired
     public DashboardController(AccountRepository accountRepository,
                                PatientRepository patientRepository,
                                ShiftRepository shiftRepository,
-                               MedicalRecordRepository medicalRecordRepository) {
+                               MedicalRecordRepository medicalRecordRepository,
+                               RoomRepository roomRepository) {
         this.accountRepository = accountRepository;
         this.patientRepository = patientRepository;
         this.shiftRepository = shiftRepository;
         this.medicalRecordRepository = medicalRecordRepository;
+        this.roomRepository = roomRepository;
     }
 
     @GetMapping("/stats")
@@ -56,6 +60,8 @@ public class DashboardController {
             stats.setNewPatientsToday(patientRepository.countByRegisteredAtBetween(startOfDay, endOfDay));
             stats.setTotalShiftsToday(shiftRepository.countByShiftDateBetween(today, today));
             stats.setTotalAppointmentsToday(medicalRecordRepository.countByCreatedAtBetween(startOfDay, endOfDay));
+            stats.setTotalRooms(roomRepository.countByIsActiveTrue());
+            stats.setTotalStaffs(accountRepository.countByActiveTrue());
         } else if (role == Account.Role.DOCTOR) {
             long myShifts = shiftRepository.findByDoctorIdAndDateBetween(userId, today, today).size();
             stats.setMyShiftsToday(myShifts);

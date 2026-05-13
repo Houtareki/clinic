@@ -54,6 +54,10 @@ public class RoomController {
         newRoom.setActive(true);
         newRoom.setCreateAt(LocalDateTime.now());
 
+        if (room.getCapacity() <= 0) {
+            return ResponseEntity.badRequest().body("Lỗi: Sức chứa phải lớn hơn 0!");
+        }
+
         Room savedRoom = roomService.save(newRoom);
         return ResponseEntity.status(HttpStatus.CREATED).body(RoomMapper.toRoomResponseDTO(savedRoom));
     }
@@ -65,6 +69,10 @@ public class RoomController {
         try {
             Room existingRoom = roomService.findById(id);
 
+            if (room.getCapacity() <= 0) {
+                return ResponseEntity.badRequest().body("Lỗi: Sức chứa phải lớn hơn 0!");
+            }
+
             if (room.getName() != null) existingRoom.setName(room.getName());
             if (room.getRoomType() != null) existingRoom.setRoomType(room.getRoomType());
             if (room.getCapacity() > 0) existingRoom.setCapacity(room.getCapacity());
@@ -74,6 +82,21 @@ public class RoomController {
 
             Room updatedRoom = roomService.save(existingRoom);
             return ResponseEntity.ok(RoomMapper.toRoomResponseDTO(updatedRoom));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng");
+        }
+    }
+
+    @PutMapping("/{id}/unlock")
+    @Transactional
+    public ResponseEntity<?> unlockRoom(@PathVariable int id)
+    {
+        try {
+            Room room = roomService.findById(id);
+            room.setActive(true);
+            roomService.save(room);
+
+            return ResponseEntity.ok("Mở khóa thành công");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phòng");
         }

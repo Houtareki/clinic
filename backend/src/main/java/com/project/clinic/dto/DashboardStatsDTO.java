@@ -12,6 +12,8 @@ import lombok.Setter;
 public class DashboardStatsDTO {
     private long patientsToday;
     private long shiftsToday;
+    private long totalRooms;
+    private long totalStaffs;
 
     private long totalDoctors;
     private long newPatientsToday;

@@ -5,6 +5,7 @@ function RoomCard({
   onToggleDropdown,
   onEdit,
   onDelete,
+  onUnlock,
 }) {
   return (
     <div className="col">
@@ -49,14 +50,25 @@ function RoomCard({
                 </button>
               </li>
               <li>
-                <button
-                  type="button"
-                  className="dropdown-item text-danger"
-                  onClick={onDelete}
-                >
-                  <i className="fa-regular fa-trash-can me-2"></i>
-                  Xóa
-                </button>
+                {room.active ? (
+                  <button
+                    type="button"
+                    className="dropdown-item text-danger"
+                    onClick={onDelete}
+                  >
+                    <i className="fa-regular fa-lock me-2"></i>
+                    Khóa
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="dropdown-item text-success"
+                    onClick={onUnlock}
+                  >
+                    <i className="fa-regular fa-lock-open me-2"></i>
+                    Khôi phục
+                  </button>
+                )}
               </li>
             </ul>
           </div>
@@ -71,10 +83,17 @@ function RoomCard({
           </div>
 
           <div className="doctor-info staff-card-info flex-grow-1">
-            <h5 className="staff-card-name mb-2 text-dark fw-bold">
-              {room.name}
-            </h5>
+            <div className="d-flex align-items-center gap-5">
+              <h5 className="staff-card-name mb-2 text-dark fw-bold">
+                {room.name}
+              </h5>
 
+              <span
+                className={`badge ${room.active ? "bg-success" : "bg-danger"}`}
+              >
+                {room.active ? "Hoạt động" : "Đã khóa"}
+              </span>
+            </div>
             <div className="text-muted mb-1" style={{ fontSize: "0.85rem" }}>
               <i
                 className="fa-solid fa-layer-group me-2"
