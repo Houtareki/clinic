@@ -43,16 +43,16 @@ export const useShiftManagement = (user) => {
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [selectedShift, setSelectedShift] = useState(null);
 
-  const { dates: weekDays, startDate, endDate } = useMemo(
-    () => getWeekRange(baseDate),
-    [baseDate],
-  );
-  const weekRangeLabel = useMemo(
-    () => getWeekRangeLabel(weekDays),
-    [weekDays],
-  );
+  const {
+    dates: weekDays,
+    startDate,
+    endDate,
+  } = useMemo(() => getWeekRange(baseDate), [baseDate]);
+  const weekRangeLabel = useMemo(() => getWeekRangeLabel(weekDays), [weekDays]);
 
-  const [formData, setFormData] = useState(() => createInitialShiftForm(startDate));
+  const [formData, setFormData] = useState(() =>
+    createInitialShiftForm(startDate),
+  );
 
   const availableDoctorOptions = useMemo(
     () => buildAvailableDoctorOptions(doctorOptions, selectedShift),
@@ -264,48 +264,46 @@ export const useShiftManagement = (user) => {
   }, [closeDrawer, fetchShifts, formData, userRole]);
 
   const handleUpdateShift = useCallback(async () => {
-    if (!selectedShift?.shiftId) {
-      return;
-    }
-
+    if (!selectedShift?.shiftId) return;
     try {
       setSaving(true);
-
       await axios.put(
         `${SHIFT_API_BASE}/${selectedShift.shiftId}`,
         buildShiftPayload(formData),
-        {
-          headers: {
-            "X-User-Role": userRole,
-          },
-        },
+        { headers: { "X-User-Role": userRole } },
       );
-
       closeDrawer();
       await fetchShifts();
       alert("Cập nhật ca trực thành công!");
     } catch (error) {
-      console.error("Lỗi khi cập nhật ca trực:", error);
-      alert(extractErrorMessage(error, "Không thể cập nhật ca trực."));
+      console.error("Lỗi:", error);
+      alert(extractErrorMessage(error, "Không thể cập nhật."));
     } finally {
       setSaving(false);
     }
   }, [closeDrawer, fetchShifts, formData, selectedShift?.shiftId, userRole]);
 
   const handleDeleteShift = useCallback(async () => {
-    if (!selectedShift?.shiftId) {
+    if (!selectedShift?.shiftId) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa ca trực này không?")) {
       return;
     }
-
+    let deleteFuture = false;
+    if (
+      window.confirm(
+        "Bạn có muốn XÓA LUÔN các ca tương tự trong TƯƠNG LAI không?",
+      )
+    ) {
+      deleteFuture = true;
+    }
     try {
       setDeleting(true);
-
-      await axios.delete(`${SHIFT_API_BASE}/${selectedShift.shiftId}`, {
-        headers: {
-          "X-User-Role": userRole,
+      await axios.delete(
+        `${SHIFT_API_BASE}/${selectedShift.shiftId}?deleteFuture=${deleteFuture}`,
+        {
+          headers: { "X-User-Role": userRole },
         },
-      });
-
+      );
       closeDrawer();
       await fetchShifts();
       alert("Xóa ca trực thành công!");

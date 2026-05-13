@@ -34,7 +34,6 @@ function ShiftFormFields({
             disabled={!canEdit}
           />
         </div>
-
         <div className="col-md-6">
           <label
             className="form-label text-muted fw-bold"
@@ -56,7 +55,56 @@ function ShiftFormFields({
             ))}
           </select>
         </div>
+        {canEdit && formData.isRecurring !== undefined && (
+          <div className="col-12 mt-2 mb-3 p-3 bg-success bg-opacity-10 rounded border border-success border-opacity-25">
+            <div className="form-check form-switch mb-2">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="isRecurring"
+                checked={formData.isRecurring}
+                onChange={(e) =>
+                  onFormChange({
+                    target: { name: "isRecurring", value: e.target.checked },
+                  })
+                }
+              />
+              <label
+                className="form-check-label fw-bold text-success"
+                htmlFor="isRecurring"
+              >
+                <i className="fa-solid fa-repeat me-2"></i> Lặp lại hàng tuần
+              </label>
+            </div>
 
+            {formData.isRecurring && (
+              <div className="d-flex align-items-center mt-2 ps-4">
+                <span
+                  className="me-2 text-muted fw-medium"
+                  style={{ fontSize: "0.85rem" }}
+                >
+                  Sinh lịch cho:
+                </span>
+                <input
+                  type="number"
+                  className="form-control form-control-sm border-success text-center fw-bold"
+                  style={{ width: "70px" }}
+                  name="recurringWeeks"
+                  min="2"
+                  max="12"
+                  value={formData.recurringWeeks}
+                  onChange={onFormChange}
+                />
+                <span
+                  className="ms-2 text-muted fw-medium"
+                  style={{ fontSize: "0.85rem" }}
+                >
+                  tuần liên tiếp
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         <div className="col-12">
           <label
             className="form-label text-muted fw-bold"

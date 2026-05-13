@@ -18,5 +18,6 @@ public interface ShiftService {
     Shift createShift(ShiftRequestDTO request);
 
     Shift updateShift(int id, ShiftRequestDTO request);
-    void deleteShift(int id);
+    void deleteShift(int id, boolean deleteFuture);
+
 }

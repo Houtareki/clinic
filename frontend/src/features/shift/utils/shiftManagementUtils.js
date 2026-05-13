@@ -5,12 +5,7 @@ import {
   getWeekRangeLabel,
 } from "./doctorScheduleUtils";
 
-export {
-  extractErrorMessage,
-  formatApiDate,
-  getWeekRange,
-  getWeekRangeLabel,
-};
+export { extractErrorMessage, formatApiDate, getWeekRange, getWeekRangeLabel };
 
 export const SHIFT_API_BASE = "http://localhost:8080/api/shifts";
 export const DOCTOR_API_BASE = "http://localhost:8080/api/receptionist/doctors";
@@ -86,6 +81,8 @@ export const createInitialShiftForm = (shiftDate = "") => ({
   shiftDate,
   period: PERIOD_OPTIONS[0].value,
   note: "",
+  isRecurring: false,
+  recurringWeeks: 4,
   assignments: [createEmptyAssignment()],
 });
 
@@ -224,7 +221,10 @@ export const mapShiftToFormData = (shift) => {
       shift?.periodDisplay || shift?.period || PERIOD_OPTIONS[0].value,
     ),
     note: shift?.note || "",
-    assignments: assignments.length > 0 ? assignments : [createEmptyAssignment()],
+    isRecurring: false,
+    recurringWeeks: 2,
+    assignments:
+      assignments.length > 0 ? assignments : [createEmptyAssignment()],
   };
 };
 
@@ -232,6 +232,8 @@ export const buildShiftPayload = (formData) => ({
   shiftDate: formData.shiftDate,
   period: formData.period,
   note: formData.note,
+  isRecurring: formData.isRecurring,
+  recurringWeeks: Number(formData.recurringWeeks) || 1,
   assignments: formData.assignments
     .filter(
       (assignment) =>

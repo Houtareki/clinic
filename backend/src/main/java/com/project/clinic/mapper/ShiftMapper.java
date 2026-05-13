@@ -29,6 +29,7 @@ public class ShiftMapper {
                         ? "13:00 - 17:00"
                         : "08:00 - 12:00"
         );
+        dto.setRecurringGroupId(shift.getRecurringGroupId());
 
         List<ShiftResponseDTO.RoomDetailDTO> roomDTOs = new ArrayList<>();
 

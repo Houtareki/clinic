@@ -33,4 +33,8 @@ public interface ShiftRepository extends JpaRepository<Shift, Integer> {
     List<Shift> findByShiftDate(LocalDate shiftDate);
 
     long countByShiftDateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
+
+    void deleteByRecurringGroupIdAndShiftDateGreaterThanEqual(String recurringGroupId, LocalDate shiftDate);
+
+    List<Shift> findByRecurringGroupIdAndShiftDateGreaterThan(String recurringGroupId, LocalDate shiftDate);
 }

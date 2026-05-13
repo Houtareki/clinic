@@ -18,6 +18,7 @@ public class ShiftResponseDTO {
     private String period;
     private String note;
     private String periodDisplay;
+    private String recurringGroupId;
     private List<RoomDetailDTO> rooms;
 
     @Getter

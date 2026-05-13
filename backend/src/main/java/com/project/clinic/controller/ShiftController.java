@@ -135,6 +135,7 @@ public class ShiftController {
     @Transactional
     public ResponseEntity<?> deleteShift(
             @PathVariable int id,
+            @RequestParam(defaultValue = "false") boolean deleteFuture,
             @RequestHeader("X-User-Role") String roleStr) {
         Account.Role role;
         try {
@@ -148,7 +149,7 @@ public class ShiftController {
         }
 
         try {
-            shiftService.deleteShift(id);
+            shiftService.deleteShift(id, deleteFuture);
             return ResponseEntity.ok("Xóa ca trực thành công");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

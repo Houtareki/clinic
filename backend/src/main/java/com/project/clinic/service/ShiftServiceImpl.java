@@ -80,42 +80,56 @@ public class ShiftServiceImpl implements ShiftService {
     @Transactional
     public Shift createShift(ShiftRequestDTO request) {
         String requestedPeriodKey = getPeriodKey(request.getPeriod());
-        ensureNoSlotConflict(request.getShiftDate(), requestedPeriodKey, null);
 
-        Shift shift = new Shift();
-        shift.setShiftDate(request.getShiftDate());
-        shift.setPeriod(toCanonicalPeriod(requestedPeriodKey));
-        shift.setNote(request.getNote());
-        shift.setCreatedAt(LocalDateTime.now());
+        boolean isRecurring = Boolean.TRUE.equals(request.getIsRecurring());
+        int loopCount = isRecurring && request.getRecurringWeeks() != null ? request.getRecurringWeeks() : 1;
+        String groupId = isRecurring ? java.util.UUID.randomUUID().toString() : null;
 
-        Set<ShiftRoom> shiftRooms = new LinkedHashSet<>();
+        Shift firstShift = null;
 
-        for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
-            Room room = roomRepository.findById(assignmentDTO.getRoomId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
+        for (int i = 0; i < loopCount; i++) {
+            LocalDate currentDate = request.getShiftDate().plusWeeks(i);
 
-            ShiftRoom shiftRoom = new ShiftRoom();
-            shiftRoom.setShift(shift);
-            shiftRoom.setRoom(room);
+            ensureNoSlotConflict(currentDate, requestedPeriodKey, null);
 
-            Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
+            Shift shift = new Shift();
+            shift.setShiftDate(currentDate);
+            shift.setPeriod(toCanonicalPeriod(requestedPeriodKey));
+            shift.setNote(request.getNote());
+            shift.setCreatedAt(LocalDateTime.now());
+            shift.setRecurringGroupId(groupId);
 
-            for (Integer doctorId : assignmentDTO.getDoctorIds()) {
-                Doctor doctor = doctorRepository.findByDoctorId(doctorId)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
+            Set<ShiftRoom> shiftRooms = new LinkedHashSet<>();
 
-                ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
-                shiftRoomDoctor.setShiftRoom(shiftRoom);
-                shiftRoomDoctor.setDoctor(doctor);
-                shiftRoomDoctors.add(shiftRoomDoctor);
+            for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
+                Room room = roomRepository.findById(assignmentDTO.getRoomId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
+
+                ShiftRoom shiftRoom = new ShiftRoom();
+                shiftRoom.setShift(shift);
+                shiftRoom.setRoom(room);
+
+                Set<ShiftRoomDoctor> shiftRoomDoctors = new LinkedHashSet<>();
+
+                for (Integer doctorId : assignmentDTO.getDoctorIds()) {
+                    Doctor doctor = doctorRepository.findByDoctorId(doctorId)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
+
+                    ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
+                    shiftRoomDoctor.setShiftRoom(shiftRoom);
+                    shiftRoomDoctor.setDoctor(doctor);
+                    shiftRoomDoctors.add(shiftRoomDoctor);
+                }
+
+                shiftRoom.setShiftRoomDoctors(shiftRoomDoctors);
+                shiftRooms.add(shiftRoom);
             }
 
-            shiftRoom.setShiftRoomDoctors(shiftRoomDoctors);
-            shiftRooms.add(shiftRoom);
+            shift.setShiftRooms(shiftRooms);
+            Shift savedShift = shiftRepository.save(shift);
+            if (i == 0) firstShift = savedShift;
         }
-
-        shift.setShiftRooms(shiftRooms);
-        return shiftRepository.save(shift);
+        return firstShift;
     }
 
     @Override
@@ -124,55 +138,89 @@ public class ShiftServiceImpl implements ShiftService {
         Shift existingShift = shiftRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ca trực với ID: " + id));
 
-        String existingPeriodKey = getPeriodKey(existingShift.getPeriod());
+        boolean isRecurring = Boolean.TRUE.equals(request.getIsRecurring());
+        // Nếu tích checkbox thì chạy theo số tuần, không thì chạy 1 lần
+        int loopCount = isRecurring && request.getRecurringWeeks() != null ? request.getRecurringWeeks() : 1;
         String requestedPeriodKey = getPeriodKey(request.getPeriod());
-        boolean isSameLogicalSlot =
-                Objects.equals(existingShift.getShiftDate(), request.getShiftDate()) &&
-                Objects.equals(existingPeriodKey, requestedPeriodKey);
-        boolean hasSlotConflict = hasSlotConflict(request.getShiftDate(), requestedPeriodKey, id);
 
-        if (hasSlotConflict && !isSameLogicalSlot) {
-            throw new RuntimeException("Ca trực này đã tồn tại cho ngày và buổi được chọn");
+        for (int i = 0; i < loopCount; i++) {
+            LocalDate targetDate = request.getShiftDate().plusWeeks(i);
+
+            if (i == 0) {
+                // Tuần hiện tại
+                applyUpdateToShift(existingShift, request, targetDate);
+                shiftRepository.save(existingShift);
+            } else {
+                // Các tuần tương lai: Tìm xem ngày đó đã có ca trực chưa
+                Shift futureShift = shiftRepository.findByShiftDate(targetDate).stream()
+                        .filter(s -> Objects.equals(getPeriodKey(s.getPeriod()), requestedPeriodKey))
+                        .findFirst()
+                        .orElse(null);
+
+                if (futureShift != null) { // Nếu có rồi thì cập nhật đè lên
+                    applyUpdateToShift(futureShift, request, targetDate);
+                    shiftRepository.save(futureShift);
+                } else { // Nếu trống thì tự động tạo mới ca trực cho tương lai
+                    Shift newShift = new Shift();
+                    newShift.setShiftDate(targetDate);
+                    newShift.setPeriod(toCanonicalPeriod(requestedPeriodKey));
+                    newShift.setCreatedAt(LocalDateTime.now());
+                    newShift.setRecurringGroupId(existingShift.getRecurringGroupId());
+                    newShift.setShiftRooms(new LinkedHashSet<>());
+                    applyUpdateToShift(newShift, request, targetDate);
+                    shiftRepository.save(newShift);
+                }
+            }
+        }
+        return existingShift;
+    }
+
+    // HÀM XỬ LÝ LÕI
+    private void applyUpdateToShift(Shift shiftToUpdate, ShiftRequestDTO request, LocalDate targetDate) {
+        String requestedPeriodKey = getPeriodKey(request.getPeriod());
+        boolean isSameLogicalSlot = Objects.equals(shiftToUpdate.getShiftDate(), targetDate) &&
+                Objects.equals(getPeriodKey(shiftToUpdate.getPeriod()), requestedPeriodKey);
+
+        if (!isSameLogicalSlot && hasSlotConflict(targetDate, requestedPeriodKey, shiftToUpdate.getShiftId())) {
+            throw new RuntimeException("Trùng lịch: Ca trực ngày " + targetDate + " đã có người trực.");
         }
 
-        existingShift.setShiftDate(request.getShiftDate());
-        existingShift.setPeriod(
-                hasSlotConflict && isSameLogicalSlot
-                        ? existingShift.getPeriod()
-                        : toCanonicalPeriod(requestedPeriodKey)
-        );
-        existingShift.setNote(request.getNote());
+        shiftToUpdate.setShiftDate(targetDate);
+        shiftToUpdate.setPeriod(toCanonicalPeriod(requestedPeriodKey));
+        shiftToUpdate.setNote(request.getNote());
 
         Set<Integer> requestRoomIds = request.getAssignments().stream()
                 .map(ShiftRequestDTO.RoomAssignmentDTO::getRoomId)
                 .collect(Collectors.toSet());
 
-        existingShift.getShiftRooms().removeIf(
-                shiftRoom -> !requestRoomIds.contains(shiftRoom.getRoom().getRoomId())
-        );
+        if (shiftToUpdate.getShiftRooms() != null) {
+            shiftToUpdate.getShiftRooms().removeIf(
+                    shiftRoom -> !requestRoomIds.contains(shiftRoom.getRoom().getRoomId())
+            );
+        } else {
+            shiftToUpdate.setShiftRooms(new LinkedHashSet<>());
+        }
 
         for (ShiftRequestDTO.RoomAssignmentDTO assignmentDTO : request.getAssignments()) {
             Room room = roomRepository.findById(assignmentDTO.getRoomId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng"));
 
-            ShiftRoom shiftRoom = existingShift.getShiftRooms().stream()
+            ShiftRoom shiftRoom = shiftToUpdate.getShiftRooms().stream()
                     .filter(currentRoom -> currentRoom.getRoom().getRoomId() == assignmentDTO.getRoomId())
                     .findFirst()
                     .orElse(null);
 
             if (shiftRoom == null) {
                 shiftRoom = new ShiftRoom();
-                shiftRoom.setShift(existingShift);
+                shiftRoom.setShift(shiftToUpdate);
                 shiftRoom.setRoom(room);
-                existingShift.getShiftRooms().add(shiftRoom);
+                shiftRoom.setShiftRoomDoctors(new LinkedHashSet<>());
+                shiftToUpdate.getShiftRooms().add(shiftRoom);
             }
 
             Set<Integer> requestDoctorIds = new HashSet<>(assignmentDTO.getDoctorIds());
-
             shiftRoom.getShiftRoomDoctors().removeIf(
-                    shiftRoomDoctor -> !requestDoctorIds.contains(
-                            shiftRoomDoctor.getDoctor().getDoctorId()
-                    )
+                    shiftRoomDoctor -> !requestDoctorIds.contains(shiftRoomDoctor.getDoctor().getDoctorId())
             );
 
             Set<Integer> existingDoctorIds = shiftRoom.getShiftRoomDoctors().stream()
@@ -180,31 +228,32 @@ public class ShiftServiceImpl implements ShiftService {
                     .collect(Collectors.toSet());
 
             for (Integer doctorId : requestDoctorIds) {
-                if (existingDoctorIds.contains(doctorId)) {
-                    continue;
-                }
-
-                Doctor doctor = doctorRepository.findByDoctorId(doctorId)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
-
+                if (existingDoctorIds.contains(doctorId)) continue;
+                Doctor doctor = doctorRepository.findByDoctorId(doctorId).orElseThrow();
                 ShiftRoomDoctor shiftRoomDoctor = new ShiftRoomDoctor();
                 shiftRoomDoctor.setShiftRoom(shiftRoom);
                 shiftRoomDoctor.setDoctor(doctor);
                 shiftRoom.getShiftRoomDoctors().add(shiftRoomDoctor);
             }
         }
-
-        return shiftRepository.save(existingShift);
     }
+
+
 
     @Override
     @Transactional
-    public void deleteShift(int id) {
-        if (!shiftRepository.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy ca trực với ID: " + id);
-        }
+    public void deleteShift(int id, boolean deleteFuture) {
+        Shift shift = shiftRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ca trực với ID: " + id));
 
-        shiftRepository.deleteById(id);
+        if (deleteFuture && shift.getRecurringGroupId() != null) {
+            shiftRepository.deleteByRecurringGroupIdAndShiftDateGreaterThanEqual(
+                    shift.getRecurringGroupId(),
+                    shift.getShiftDate()
+            );
+        } else {
+            shiftRepository.delete(shift);
+        }
     }
 
     private void ensureNoSlotConflict(LocalDate shiftDate, String periodKey, Integer excludedShiftId) {
@@ -234,7 +283,7 @@ public class ShiftServiceImpl implements ShiftService {
                 .trim();
 
         if (
-                normalized.contains("Chiều") ||
+                normalized.contains("chieu") ||
                 normalized.contains("afternoon") ||
                 normalized.contains("1300")
         ) {

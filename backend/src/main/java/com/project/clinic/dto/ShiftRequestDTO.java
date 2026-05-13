@@ -17,6 +17,8 @@ public class ShiftRequestDTO {
     private LocalDate shiftDate;
     private String period;
     private String note;
+    private Boolean isRecurring;
+    private Integer recurringWeeks;
     private List<RoomAssignmentDTO> assignments;
 
     @Getter

@@ -36,6 +36,9 @@ public class Shift {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "recurring_group_id")
+    private String recurringGroupId;
+
     @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ShiftRoom> shiftRooms = new LinkedHashSet<>();
 }
